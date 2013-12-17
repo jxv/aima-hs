@@ -21,18 +21,17 @@ _Motivation: Define a general model which can be implemented to analyze some giv
 2.2 Good Behavior: The Concept of Rationality
 ---------------------------------------------
 
-_Motivation: Define accurate feedback about an agent's choices._
+_Motivation: Define rational decision making from a subjective perspective._
 
-* A rational agent usually performs well when "it gets what it wants."
-* _Performance mesaure_ is usually
-  So a certain environment may drastically vary the result of an agent's performance measure.
+* A _rational agent_ will choose actions based on current knowledge and feedback, with an emphasis on the process, the how.
+* Typically, a good _perform measure_ quantifies if agent gets what it wants, with an emphasis on the end result, the what.
+  Different environments may drastically vary the result of an agent's performance measure, regardless of process's quality.
 
-Rationality depends on
-- prior knowledge of environment
-- available action
-- order and size of the percept sequence
-- Motivation: 
-
+Rationality depends on:
+* quality of the performance measure 
+* prior knowledge of environment
+* available actions
+* percept sequence
 
 2.3 The Nature of Environments
 ------------------------------
