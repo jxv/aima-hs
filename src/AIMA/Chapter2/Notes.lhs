@@ -2,14 +2,12 @@ Chapter 2 - Intelligent Agents
 ==============================
 
 > module AIMA.Chapter2.Notes where
-> import Control.Monad.State
-> import Data.Map as M
 
 
 This chapter gives an abstract introduction to agents.
 
 
-2.1 Agents and Environments
+2.2 Agents and Environments
 ---------------------------
 
 _Motivation: Define a general model which can be implemented to analyze some given system._

@@ -1,0 +1,77 @@
+name:          aima
+version:       0.1.0.0
+license-file:  LICENSE
+build-type:    Simple
+cabal-version: >= 1.10
+
+library
+  build-depends:
+    base >= 4.6 && < 5,
+    containers >= 0.5,
+    mtl >= 2.1,
+    linear >= 1.3,
+    probability >= 0.1
+--- ^ github.com/chris-taylor/hs-probability
+
+  exposed-modules:
+    AIMA.Chapter1.Notes
+    AIMA.Chapter1.Exercises
+    AIMA.Chapter2.Notes
+    AIMA.Chapter2.Exercises
+    AIMA.Chapter3.Notes
+    AIMA.Chapter3.Exercises
+    AIMA.Chapter4.Notes
+    AIMA.Chapter4.Exercises
+    AIMA.Chapter5.Notes
+    AIMA.Chapter5.Exercises
+    AIMA.Chapter6.Notes
+    AIMA.Chapter6.Exercises
+    AIMA.Chapter7.Notes
+    AIMA.Chapter7.Exercises
+    AIMA.Chapter8.Notes
+    AIMA.Chapter8.Exercises
+    AIMA.Chapter9.Notes
+    AIMA.Chapter9.Exercises
+    AIMA.Chapter10.Notes
+    AIMA.Chapter10.Exercises
+    AIMA.Chapter11.Notes
+    AIMA.Chapter11.Exercises
+    AIMA.Chapter12.Notes
+    AIMA.Chapter12.Exercises
+    AIMA.Chapter13.Notes
+    AIMA.Chapter13.Exercises
+    AIMA.Chapter14.Notes
+    AIMA.Chapter14.Exercises
+    AIMA.Chapter15.Notes
+    AIMA.Chapter15.Exercises
+    AIMA.Chapter16.Notes
+    AIMA.Chapter16.Exercises
+    AIMA.Chapter17.Notes
+    AIMA.Chapter17.Exercises
+    AIMA.Chapter18.Notes
+    AIMA.Chapter18.Exercises
+    AIMA.Chapter19.Notes
+    AIMA.Chapter19.Exercises
+    AIMA.Chapter20.Notes
+    AIMA.Chapter20.Exercises
+    AIMA.Chapter21.Notes
+    AIMA.Chapter21.Exercises
+    AIMA.Chapter22.Notes
+    AIMA.Chapter22.Exercises
+    AIMA.Chapter23.Notes
+    AIMA.Chapter23.Exercises
+    AIMA.Chapter24.Notes
+    AIMA.Chapter24.Exercises
+    AIMA.Chapter25.Notes
+    AIMA.Chapter25.Exercises
+    AIMA.Chapter26.Notes
+    AIMA.Chapter26.Exercises
+    AIMA.Chapter27.Notes
+    AIMA.Chapter27.Exercises
+
+  hs-source-dirs: src
+
+  ghc-options: -Wall -O2
+
+  default-language:
+    Haskell2010
