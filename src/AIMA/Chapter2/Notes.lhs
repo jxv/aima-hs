@@ -1,9 +1,9 @@
 Chapter 2 - Intelligent Agents
 ==============================
 
->module AIMA.Chapter2.Notes where
->import Control.Monad.State
->import Data.Map as M
+> module AIMA.Chapter2.Notes where
+> import Control.Monad.State
+> import Data.Map as M
 
 
 This chapter gives an abstract introduction to agents.
@@ -12,9 +12,9 @@ This chapter gives an abstract introduction to agents.
 2.1 Agents and Environments
 ---------------------------
 
-_Motivation: Define a general model which can be implemented to analyze a certain system._
+_Motivation: Define a general model which can be implemented to analyze some given system._
 
-* Within an _environment_, an _agent_ senses, using _sensors_, and acts, using _actutators_.
+* Within an _environment_, an _agent_ senses, using _sensors_, and reacts, using _actutators_.
 * An agent's sensor creates a _percept_ which can be stored in a _percept sequence_. 
   Ideally, the sequence is allowed to be infinitely large.
 * An _agent function_, the mathematical description, and an _agent program_, the software implemenation, transforms percepts (and percept sequences) into _actions_.
