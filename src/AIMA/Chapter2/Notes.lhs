@@ -113,18 +113,18 @@ Table Driven Agent
 
 > class TdAction act where
 >   allActions :: [act]
-> 
+>  
 > class TdPercept per where
 >   allPercepts :: [per]
-
-> data TableDrivenAgentState per = TableDrivenAgentState { tdPerceptSequence :: [per] }
 > 
+> data TableDrivenAgentState per = TableDrivenAgentState { tdPerceptSequence :: [per] }
+>  
 > class Table tbl where
 >   fullTable :: (TdAction act) => tbl act
 >   lookupTable :: (TdPercept per, TdAction act) => tbl act -> [per] -> act
->
-> type TableDrivenAgent per tbl act = RWS (tbl act) [act] (TableDrivenAgentState per) ()
 > 
+> type TableDrivenAgent per tbl act = RWS (tbl act) [act] (TableDrivenAgentState per) ()
+>  
 > tableDrivenAgentProgram :: (TdPercept per, Table tbl, TdAction act) => per -> TableDrivenAgent per tbl act
 > tableDrivenAgentProgram p = do
 >   table <- ask
@@ -141,18 +141,18 @@ Table Driven Agent
 * __Condition-action rule__, fancy way of saying _if <condition> then <act>_ for an agent's reflex behavior.
 
 > data SrState = SrState -- | dummy state...
-> 
+>  
 > class SrPercept per where
 >   interpretInput :: per -> SrState
-> 
+>  
 > data SrAction = SrAction -- | dummy action...
->
+> 
 > class SrRule r where
 >   ruleMatch :: SrState -> [r] -> r
 >   ruleAction :: r -> SrAction
-> 
+>  
 > type SimpleReflexAgent rule = RWS [rule] [SrAction] () ()
-> 
+>  
 > simpleReflexAgentProgram :: (SrPercept per, SrRule rule) => per -> SimpleReflexAgent rule
 > simpleReflexAgentProgram p = do
 >   rules <- ask
