@@ -153,9 +153,8 @@ Table Driven Agent
 >   let action = ruleAction rule
 >   tell [action]
 
-* limited intelligence, present focus
-* even worse without sensors
-* __randomized__ behavior getting out of a rut
+* The agent's disadvantge is its present focused intelligence, and it's dysfunctional without sensors.
+  An reflex agent without sensors should use __randomized__ behavior to avoid getting stuck.
 
 **2.4.3 Model-based reflex agents**
 
