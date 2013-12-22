@@ -1,7 +1,6 @@
 Chapter 2 - Intelligent Agents
 ==============================
 
-> {-# LANGUAGE FunctionalDependencies #-}
 > {-# LANGUAGE MultiParamTypeClasses #-}
 > module AIMA.Chapter2.Notes where
 > import Control.Monad.RWS
@@ -111,26 +110,22 @@ Table Driven Agent
 * For many environments, table driven agents require unrealistic knowledge for all possible percepts and actions.
   Prefer choosing a specialized agent for the specific task rather than a general one.
 
-> class TdAction act where
->   allActions :: [act]
->  
-> class TdPercept per where
->   allPercepts :: [per]
+> class Action a
+> class Percept p
+> type PerceptSequence p = [p]
+
+> class Table t where
+>   fullTable :: (Action a) => t a
+>   lookupTable :: (Percept p, Action a) => t a -> [p] -> a
 > 
-> data TableDrivenAgentState per = TableDrivenAgentState { tdPerceptSequence :: [per] }
->  
-> class Table tbl where
->   fullTable :: (TdAction act) => tbl act
->   lookupTable :: (TdPercept per, TdAction act) => tbl act -> [per] -> act
-> 
-> type TableDrivenAgent per tbl act = RWS (tbl act) [act] (TableDrivenAgentState per) ()
->  
-> tableDrivenAgentProgram :: (TdPercept per, Table tbl, TdAction act) => per -> TableDrivenAgent per tbl act
+> type TableDrivenAgent p t a = RWS (t a) [a] (PerceptSequence p) ()
+
+> tableDrivenAgentProgram :: (Percept p, Table t, Action a) => p -> TableDrivenAgent p t a
 > tableDrivenAgentProgram p = do
 >   table <- ask
->   TableDrivenAgentState perseq <- get
+>   perseq <- get
 >   let perseq' = p : perseq
->   put (TableDrivenAgentState perseq')
+>   put perseq'
 >   tell [lookupTable table perseq']
 
 
@@ -140,21 +135,18 @@ Table Driven Agent
   It ignores all previous percepts.
 * __Condition-action rule__, fancy way of saying _if <condition> then <act>_ for an agent's reflex behavior.
 
-> data SrState = SrState -- | dummy state...
+> class Rule r
+> class AgentState s
+
+> type InterpretInput s p = p -> s
+> type RuleMatch s r = s -> [r] -> r
+> type RuleAction r a = r -> a
 >  
-> class SrPercept per where
->   interpretInput :: per -> SrState
->  
-> data SrAction = SrAction -- | dummy action...
-> 
-> class SrRule r where
->   ruleMatch :: SrState -> [r] -> r
->   ruleAction :: r -> SrAction
->  
-> type SimpleReflexAgent rule = RWS [rule] [SrAction] () ()
->  
-> simpleReflexAgentProgram :: (SrPercept per, SrRule rule) => per -> SimpleReflexAgent rule
-> simpleReflexAgentProgram p = do
+> type SimpleReflexAgent r a = RWS [r] [a] () ()
+
+> simpleReflexAgentProgram :: (Percept p, Rule r, Action a, AgentState s) =>
+>                              InterpretInput s p -> RuleMatch s r -> RuleAction r a -> p -> SimpleReflexAgent r a
+> simpleReflexAgentProgram interpretInput ruleMatch ruleAction p = do
 >   rules <- ask
 >   let st = interpretInput p
 >   let rule = ruleMatch st rules
@@ -172,27 +164,31 @@ Table Driven Agent
   * Understanding how an environment works independently of the agent's presence.
   * Ability to infer how the agent's actions will effect the environment.
 
- class MbrState s a p m | a p m -> s where
-   mbrUpdateState :: s -> (Maybe a) -> p -> m -> s
- 
- class MbrRule r s a | s a -> r where
-   mbrRuleMatch :: s -> [r] -> r
-   mbrRuleAction :: r -> a
+> class Model m
 
- type ModelBasedReflexAgent s m r a = RWS ([r], m) [a] (s, Maybe a)
- 
- modelBasedReflexAgentProgram p = do
-   (rules, model) <- ask
-   (st, maction) <- get
-   let st' = mbrUpdateState st maction p model
-   let rule = mbrRuleMatch st' rules
-   let action = mbrRuleAction rule
-   tell [action]
-
+> type UpdateState s a p m = s -> (Maybe a) -> p -> m -> s
+>  
+> type ModelBasedReflexAgent s m r a = RWS ([r], m) [a] (s, Maybe a)
+  
+> modelBasedReflexAgentProgram :: (Percept p, Model m, Action a, AgentState s, Rule r) =>
+>                                 UpdateState s a p m -> RuleMatch s r -> RuleAction r a -> p -> ModelBasedReflexAgent s m r a ()
+> modelBasedReflexAgentProgram updateState ruleMatch ruleAction p = do
+>   (rules, model) <- ask
+>   (st, maction) <- get
+>   let st' = updateState st maction p model
+>   let rule = ruleMatch st' rules
+>   let action = ruleAction rule
+>   put (st', Just action)
+>   tell [action]
 
 **2.4.4 Goal-based agents**
 
+* __Goals__ are binary: Achieved or Not-Achieved.
+* Goal-based agents use goals as an explicitly and internally defined performance measure.
+
 **2.4.5 Utility-based agents**
+
+* __Utility function__ returns the usefulness, __utility__, of an agent's actions.
 
 **2.4.6 Learning agents**
 
