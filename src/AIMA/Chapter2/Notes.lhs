@@ -206,22 +206,10 @@ __Learning agents__ components:
 
 **2.4.7 How the components of agent programs work** 
 
-* __atomic, factored, structured__
-
-* __atomic representation__
-
-* __factored representation__
-
-* __variable__
-
-* __attribute__
-
-* __value__
-
-* __structured representation__
-
-* __expressiveness__
-
+* An __atomic__ component represents a purely functional structure with no internal components.
+* A __factored__ component represents a collection of __variables__/__attributes__ of various types each having a __value__.
+* A __structured__ component represents a systematic relationship of variables/attributes.
+* A component's __expressiveness__ lie on an axis complexty-and-conciseness vs simplicity-and-quantity.
 
 Bibliographical and Historical Notes
 ------------------------------------
