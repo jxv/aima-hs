@@ -6,6 +6,18 @@
 3.1 Problem Solving
 -------------------
 
+goal
+__goal formulation__
+__problem formulation__
+unknown
+observable
+known
+deterministic
+__search__
+__solution__
+__execution__
+__open loop__
+
 3.2 Example Problems
 --------------------
 
