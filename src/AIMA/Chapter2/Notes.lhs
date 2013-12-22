@@ -133,7 +133,7 @@ Table Driven Agent
 
 * __Simple reflex agents__ only choose actions based on the current percept.
   It ignores all previous percepts.
-* __Condition-action rule__, fancy way of saying _if <condition> then <act>_ for an agent's reflex behavior.
+* __Condition-action rule__, fancy way of saying _if (condition) then (act)_ for an agent's reflex behavior.
 
 > class Rule r
 > class AgentState s
@@ -189,21 +189,20 @@ Table Driven Agent
 **2.4.5 Utility-based agents**
 
 * __Utility function__ returns the usefulness, __utility__, of an agent's actions.
+* A rational utility-based agent in a partially observable and stochastic environment maximizes realistic probabilities or the __expected utility__.
 
 **2.4.6 Learning agents**
 
 * Hard coding rules into intelligent machines is often tedious.
   Alternatively, a preferred way is to create a learning machine then teach it.
 
-Necessary to __learning agents__:
-  * learning element
-  * performance element
-  * critic
-  * problem generator
+__Learning agents__ components:
+  * The __learning element__ searches for improvements by creating goals
+  * The __performance element__ decides the action by judging percepts for reflexes, comparing goal progress to expectations, and looking for new areas to explore.
+  * The __critic__ gives percepts meaning and looks for performance results
+  * The __problem generator__ prevents local maxima for goals
 
-* __reward__
-* __penalty__
-
+* Together the components act as interdependent and improving system of checks-and-balances using outside feeback as rewards and penalties.
 
 **2.4.7 How the components of agent programs work** 
 
