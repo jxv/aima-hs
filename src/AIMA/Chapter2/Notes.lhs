@@ -214,10 +214,9 @@ __Learning agents__ components:
 Bibliographical and Historical Notes
 ------------------------------------
 
-* __controller__
-
-* dynamic programming
-
-* __multiagent systems__
-
-* softbot
+* The concept of an agent derived from __controller__ in control theory. Today, it has evolved from simple/indepedent to complex/interdependent components.
+* Dynamic programming derives from agents existing in a partially observable environment.
+* __autonomic computing__
+* In agent-oriented programming, a __multiagent system__, typically a system of interdependent agents each with independent internal state, serves as a model for autonomic computing.
+* The idea of goal-based agents, popular with traditional cognitive psychology, are exhibited through softbot programs.
+  Users often recognize the agent's _intentions_ towards its _desires_.
