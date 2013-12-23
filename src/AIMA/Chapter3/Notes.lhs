@@ -3,6 +3,8 @@
 
 > module AIMA.Chapter3.Notes where
 
+problem-sovling agent
+
 3.1 Problem Solving
 -------------------
 
