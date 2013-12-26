@@ -2,6 +2,7 @@
 =================================
 
 > module AIMA.Chapter3.Notes where
+> import Control.Monad.RWS
 
 This chapter is about the problem-sovling agent, a goal based agent which represents the environment as atomic,
 and solving with uninformed and informed search algorithms each producing a sequence of actions.
@@ -14,6 +15,39 @@ and solving with uninformed and informed search algorithms each producing a sequ
   How the agent decides depends on the environment; whether it's unknown, observerable, known, or determinstic.
 * After the process of __searching__ for the goal, the agent __executes__ the __solution__ in the environment.
 * Because this agent views the world as atomic, it executes the solution while ignoring new percepts. The process is known as __open loop__ amongst control theorists.
+
+> class Percept p
+> class Action a
+> class AgentState s
+> class Goal g
+> class Problem pr
+>
+> type UpdateState s p = s -> p -> s
+> type FormulateGoal s g = s -> g
+> type FormulateProblem s g pr = s -> g -> pr
+> type Search pr a = pr -> [a]
+>  
+> type SimpleProblemSolvingAgent p a s g pr m =
+>        RWST (UpdateState s p, FormulateGoal s g, FormulateProblem s g pr, Search pr a) [a] ([a], s) m
+>  
+> simpleProblemSolvingAgentProgram :: (Percept p, Action a, AgentState s, Goal g, Problem pr, Monad m) =>
+>                                     p -> SimpleProblemSolvingAgent p a s g pr m ()
+> simpleProblemSolvingAgentProgram percept = do
+>   (updateState, formulateGoal, formulateProblem, search) <- ask
+>   (actions, st) <- get
+>   let st' = updateState st percept
+> 
+>   let goal     = formulateGoal st
+>   let problem  = formulateProblem st goal
+>   let actions' = search problem 
+> 
+>   let (action, actions'') = if null actions
+>                               then if null actions'
+>                                      then ([], [])
+>                                      else ([head actions'], tail actions')
+>                               else ([head actions], tail actions)
+>   
+>   tell action >> put (actions'', st')
 
 **3.1.1 Well-defined problems and solutions**
 
