@@ -21,12 +21,12 @@ and solving with uninformed and informed search algorithms each producing a sequ
 > class AgentState s
 > class Goal g
 > class Problem pr
->
+> 
 > type UpdateState s p = s -> p -> s
 > type FormulateGoal s g = s -> g
 > type FormulateProblem s g pr = s -> g -> pr
 > type Search pr a = pr -> [a]
->  
+>   
 > type SimpleProblemSolvingAgent p a s g pr m =
 >        RWST (UpdateState s p, FormulateGoal s g, FormulateProblem s g pr, Search pr a) [a] ([a], s) m
 >  
@@ -36,17 +36,17 @@ and solving with uninformed and informed search algorithms each producing a sequ
 >   (updateState, formulateGoal, formulateProblem, search) <- ask
 >   (actions, st) <- get
 >   let st' = updateState st percept
-> 
+>  
 >   let goal     = formulateGoal st
 >   let problem  = formulateProblem st goal
 >   let actions' = search problem 
-> 
+>  
 >   let (action, actions'') = if null actions
 >                               then if null actions'
 >                                      then ([], [])
 >                                      else ([head actions'], tail actions')
 >                               else ([head actions], tail actions)
->   
+>    
 >   tell action >> put (actions'', st')
 
 **3.1.1 Well-defined problems and solutions**
