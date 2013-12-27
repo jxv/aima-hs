@@ -3,6 +3,7 @@
 
 > module AIMA.Chapter3.Notes where
 > import Control.Monad.RWS
+> import Control.Monad.Fix
 
 This chapter is about the problem-sovling agent, a goal based agent which represents the environment as atomic,
 and solving with uninformed and informed search algorithms each producing a sequence of actions.
@@ -21,33 +22,33 @@ and solving with uninformed and informed search algorithms each producing a sequ
 > class AgentState s
 > class Goal g
 > class Problem pr
-> 
+ 
 > type UpdateState s p = s -> p -> s
 > type FormulateGoal s g = s -> g
 > type FormulateProblem s g pr = s -> g -> pr
 > type Search pr a = pr -> [a]
->   
+   
 > type SimpleProblemSolvingAgent p a s g pr m =
 >        RWST (UpdateState s p, FormulateGoal s g, FormulateProblem s g pr, Search pr a) [a] ([a], s) m
->  
+  
 > simpleProblemSolvingAgentProgram :: (Percept p, Action a, AgentState s, Goal g, Problem pr, Monad m) =>
 >                                     p -> SimpleProblemSolvingAgent p a s g pr m ()
-> simpleProblemSolvingAgentProgram percept = do
->   (updateState, formulateGoal, formulateProblem, search) <- ask
->   (actions, st) <- get
->   let st' = updateState st percept
+> simpleProblemSolvingAgentProgram percept =
+>   do (updateState, formulateGoal, formulateProblem, search) <- ask
+>      (actions, st) <- get
+>      let st' = updateState st percept
 >  
->   let goal     = formulateGoal st
->   let problem  = formulateProblem st goal
->   let actions0 = search problem 
+>      let goal       = formulateGoal st
+>      let problem    = formulateProblem st goal
+>      let newactions = search problem 
 >  
->   let (action', actions') = if null actions
->                               then if null actions0
->                                      then ([], [])
->                                      else ([head actions0], tail actions0)
->                               else ([head actions], tail actions)
->    
->   tell action' >> put (actions', st')
+>      let (action', actions') = if (not . null) actions
+>                                   then ([head actions], tail actions)
+>                                   else if (not . null) newactions
+>                                           then ([head newactions], tail newactions)
+>                                           else ([], [])
+>      tell action'
+>      put (actions', st')
 
 **3.1.1 Well-defined problems and solutions**
 
