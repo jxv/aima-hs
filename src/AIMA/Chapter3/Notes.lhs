@@ -39,15 +39,15 @@ and solving with uninformed and informed search algorithms each producing a sequ
 >  
 >   let goal     = formulateGoal st
 >   let problem  = formulateProblem st goal
->   let actions' = search problem 
+>   let actions0 = search problem 
 >  
->   let (action, actions'') = if null actions
->                               then if null actions'
+>   let (action', actions') = if null actions
+>                               then if null actions0
 >                                      then ([], [])
->                                      else ([head actions'], tail actions')
+>                                      else ([head actions0], tail actions0)
 >                               else ([head actions], tail actions)
 >    
->   tell action >> put (actions'', st')
+>   tell action' >> put (actions', st')
 
 **3.1.1 Well-defined problems and solutions**
 
@@ -56,7 +56,7 @@ A searchable problem consists of an agent's:
 * A set of __applicable__ __actions__ for any given state.
 * A __transistion model__ describing how each action would change the state.
 * A __goal test__ function to check if the agent arrived at a successful terminal state.
-* The __path cost__ si the total cost of all __step costs__ for a __path__, a given sequence of actions.
+* The __path cost__ is the total cost of all __step costs__ for a __path__, a given sequence of actions.
 
 * The __state space__ is the collective nodes on a __graph__ where any path can reach.
 * An optimal solution has lowest path cost for all possible solutions.
@@ -68,6 +68,17 @@ A searchable problem consists of an agent's:
 
 3.2 Example Problems
 --------------------
+
+A __toy problem__ emphasis the method for solving, and a solution to a __real world problem__ are practial for non-programmers.
+
+**3.2.1 Toy Problems**
+
+* __Sliding-block puzzles__, such as the 8-puzzle, are NP-complete and commonly used for testing or demonstrating search algorithms.
+
+* __Incremental formulation__ adds pieces into the correct location.
+* __Complete-state formulation__ reorganizes pieces to the correct location.
+
+**3.2.2 Real-world problems**
 
 3.3 Searching for Solutions
 ---------------------------
@@ -81,6 +92,9 @@ A searchable problem consists of an agent's:
 3.6 Heuristic Functions
 -----------------------
 
+3.7 Summary
+-----------
+
 Bibliographical and Historical Notes
-------------------------------------
+------------------------------------ 
 
