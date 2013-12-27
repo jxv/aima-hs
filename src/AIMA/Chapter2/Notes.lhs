@@ -121,12 +121,12 @@ Table Driven Agent
 > type TableDrivenAgent p t a = RWS (t a) [a] (PerceptSequence p) ()
 
 > tableDrivenAgentProgram :: (Percept p, Table t, Action a) => p -> TableDrivenAgent p t a
-> tableDrivenAgentProgram p = do
->   table <- ask
->   perseq <- get
->   let perseq' = p : perseq
->   put perseq'
->   tell [lookupTable table perseq']
+> tableDrivenAgentProgram p =
+>   do table <- ask
+>      perseq <- get
+>      let perseq' = p : perseq
+>      put perseq'
+>      tell [lookupTable table perseq']
 
 
 **2.4.2 Simple reflex agents**
@@ -146,12 +146,12 @@ Table Driven Agent
 
 > simpleReflexAgentProgram :: (Percept p, Rule r, Action a, AgentState s) =>
 >                              InterpretInput s p -> RuleMatch s r -> RuleAction r a -> p -> SimpleReflexAgent r a
-> simpleReflexAgentProgram interpretInput ruleMatch ruleAction p = do
->   rules <- ask
->   let st = interpretInput p
->   let rule = ruleMatch st rules
->   let action = ruleAction rule
->   tell [action]
+> simpleReflexAgentProgram interpretInput ruleMatch ruleAction p =
+>   do rules <- ask
+>      let st = interpretInput p
+>      let rule = ruleMatch st rules
+>      let action = ruleAction rule
+>      tell [action]
 
 * The agent's disadvantage is its present focused intelligence, and it's dysfunctional without sensors.
   An reflex agent without sensors should use __randomized__ behavior to avoid getting stuck.
@@ -171,14 +171,14 @@ Table Driven Agent
   
 > modelBasedReflexAgentProgram :: (Percept p, Model m, Action a, AgentState s, Rule r) =>
 >                                 UpdateState s a p m -> RuleMatch s r -> RuleAction r a -> p -> ModelBasedReflexAgent s m r a ()
-> modelBasedReflexAgentProgram updateState ruleMatch ruleAction p = do
->   (rules, model) <- ask
->   (st, maction) <- get
->   let st' = updateState st maction p model
->   let rule = ruleMatch st' rules
->   let action = ruleAction rule
->   put (st', Just action)
->   tell [action]
+> modelBasedReflexAgentProgram updateState ruleMatch ruleAction p =
+>   do (rules, model) <- ask
+>      (st, maction) <- get
+>      let st' = updateState st maction p model
+>      let rule = ruleMatch st' rules
+>      let action = ruleAction rule
+>      put (st', Just action)
+>      tell [action]
 
 **2.4.4 Goal-based agents**
 
