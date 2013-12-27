@@ -73,12 +73,16 @@ A __toy problem__ emphasis the method for solving, and a solution to a __real wo
 
 **3.2.1 Toy Problems**
 
-* __Sliding-block puzzles__, such as the 8-puzzle, are NP-complete and commonly used for testing or demonstrating search algorithms.
+__Sliding-block puzzles__, such as the 8-puzzle, are NP-complete and commonly used for testing or demonstrating search algorithms.
 
 * __Incremental formulation__ adds pieces into the correct location.
 * __Complete-state formulation__ reorganizes pieces to the correct location.
 
 **3.2.2 Real-world problems**
+
+* __Touring problems__, a path finding problem where the solution doesn't cross previously visited locations, include the __traveling salespoerson problem (TSP)__.
+* Positioning components and connections in __VLSI (Very-large-scale integration) layout__ while minimizing constraints.
+* Both __automatic assembly sequencing__ and __protein design__ must be implemented in the correct sequence.
 
 3.3 Searching for Solutions
 ---------------------------
