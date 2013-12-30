@@ -142,12 +142,14 @@ Table Driven Agent
 > type RuleMatch s r = s -> [r] -> r
 > type RuleAction r a = r -> a
 >  
-> type SimpleReflexAgent r a = RWS [r] [a] () ()
+> type SimpleReflexAgent s p r a = RWST (InterpretInput s p, RuleMatch s r, RuleAction r a, [r])
+>                                       [a]
+>                                       ()
 
-> simpleReflexAgentProgram :: (Percept p, Rule r, Action a, AgentState s) =>
->                              InterpretInput s p -> RuleMatch s r -> RuleAction r a -> p -> SimpleReflexAgent r a
-> simpleReflexAgentProgram interpretInput ruleMatch ruleAction p =
->   do rules <- ask
+> simpleReflexAgentProgram :: (Percept p, Rule r, Action a, AgentState s, Monad m) =>
+>                             p -> SimpleReflexAgent s p r a m ()
+> simpleReflexAgentProgram p =
+>   do (interpretInput, ruleMatch, ruleAction, rules) <- ask
 >      let st = interpretInput p
 >      let rule = ruleMatch st rules
 >      let action = ruleAction rule
@@ -165,14 +167,16 @@ Table Driven Agent
 
 > class Model m
 
-> type UpdateState s a p m = s -> (Maybe a) -> p -> m -> s
+> type UpdateState s a p md = s -> (Maybe a) -> p -> md -> s
 >  
-> type ModelBasedReflexAgent s m r a = RWS ([r], m) [a] (s, Maybe a)
+> type ModelBasedReflexAgent s p md r a = RWST (UpdateState s a p md, RuleMatch s r, RuleAction r a, [r], md)
+>                                              [a]
+>                                              (s, Maybe a)
   
-> modelBasedReflexAgentProgram :: (Percept p, Model m, Action a, AgentState s, Rule r) =>
->                                 UpdateState s a p m -> RuleMatch s r -> RuleAction r a -> p -> ModelBasedReflexAgent s m r a ()
-> modelBasedReflexAgentProgram updateState ruleMatch ruleAction p =
->   do (rules, model) <- ask
+> modelBasedReflexAgentProgram :: (Percept p, Model md, Action a, AgentState s, Rule r, Monad m) =>
+>                                 p -> ModelBasedReflexAgent s p md r a m ()
+> modelBasedReflexAgentProgram p =
+>   do (updateState, ruleMatch, ruleAction, rules, model) <- ask
 >      (st, maction) <- get
 >      let st' = updateState st maction p model
 >      let rule = ruleMatch st' rules
