@@ -53,7 +53,7 @@
 > data VEnv = VEnv
 >   { vPriori :: [VSquare], vLoc :: VLoc }
 >   deriving (Show, Eq)
- 
+>  
 > vLookupPrior :: [VSquare] -> VLoc -> VSquare
 > vLookupPrior priori loc = priori !! (fromEnum loc)
 > 
@@ -64,37 +64,53 @@
 
 > vPerformanceMeasure :: (Num a) => VEnv -> a
 > vPerformanceMeasure env = (sum . map measure) (vPriori env)
->   where measure (_,p) = if p == VClean then 1 else 0
+>   where measure (_, p) = if p == VClean then 1 else 0
  
 
 * 2.9
 
+SRVA (Simple Reflex Vacuum Agent)
+
+If the current square is dirty, suck.
+Otherwise, alternate between tiles.
+
 > instance N.AgentState VSquare
->  
-> vInterpretInput :: VSquare -> VSquare
-> vInterpretInput = id
 >  
 > vRuleMatch :: VSquare -> [VRule] -> VRule
 > vRuleMatch sq rules = case sq of (_, VDirty)  -> VSuck
 >                                  (VA, VClean) -> VRight
 >                                  (VB, VClean) -> VLeft
->  
-> vRuleAction :: VRule -> VAction 
-> vRuleAction = id
+
+SRVA's types over the general implementation.
+
 > 
-> vReader = (vInterpretInput, vRuleMatch, vRuleAction, boundRange)
-
-SRVA (Simple Reflex Vacuum Agent)
-
 > srvaProgram :: (Monad m) => VSquare -> N.SimpleReflexAgent VSquare VSquare VRule VAction m ()
 > srvaProgram = N.simpleReflexAgentProgram
+
+Score the SRVA over *n*-steps in some environment.
+For each step, it applies its actions onto the environment then scores the result.
+ 
+> scoreSRVA :: (Monad m, Num a) => Int -> VEnv -> m a 
+> scoreSRVA steps env =
+>   do let stepper (s, e) = scoreSRVAStep e >>= \(s', e') -> return (s + s', e')
+>          runsteps = concatM (replicate steps stepper) 
+>      (score,_) <- runsteps (0, env)
+>      return score
+>  
+> scoreSRVAStep :: (Monad m, Num a) => VEnv -> m (a, VEnv) 
+> scoreSRVAStep env@(VEnv priori loc) =
+>   do let per = (vLookupPrior priori) loc
+>      act <- stepSRVAProgram per
+>      let env' = applyVAction env act
+>      let score = vPerformanceMeasure env'
+>      return (score, env')
 > 
 > stepSRVAProgram :: (Monad m) => VSquare -> m VAction
 > stepSRVAProgram p = 
->   do (_, _, actions) <- runRWST (srvaProgram p) vReader ()
+>   do (_, _, actions) <- runRWST (srvaProgram p) reader ()
 >      return (head actions)
-
-
+>   where reader = (id, vRuleMatch, id, boundRange)
+> 
 > applyVAction :: VEnv -> VAction -> VEnv
 > applyVAction (VEnv priori loc) act =
 >   let percept = (snd . vLookupPrior priori) loc
@@ -103,27 +119,21 @@ SRVA (Simple Reflex Vacuum Agent)
 >                                      VRight -> (VB, percept)
 >       priori' = vUpdatePrior priori (loc, percept')
 >   in (VEnv priori' loc')
-> 
-> stepScoreSRVA :: (Monad m, Num a) => VEnv -> m (a, VEnv) 
-> stepScoreSRVA env@(VEnv priori loc) =
->   do let per = (vLookupPrior priori) loc
->      act <- stepSRVAProgram per
->      let env' = applyVAction env act
->      let score = vPerformanceMeasure env'
->      return (score, env')
-> 
-> scoreSRVA :: (Monad m, Num a) => Int -> VEnv -> m a 
-> scoreSRVA steps env =
->   do let stepper (s, e) = stepScoreSRVA e >>= \(s', e') -> return (s + s', e')
->          runsteps = concatM (replicate steps stepper) 
->      (score,_) <- runsteps (0, env)
->      return score
+
+Generates all possible vacuum world environments using each attributes' boundaries.
 
 > allVEnvs :: [VEnv]
 > allVEnvs = [VEnv [(VA, a), (VB, b)] loc | loc <- boundRange, a <- boundRange, b <- boundRange]
-> 
-> vAvgScore :: (Monad m, Functor m) => m Integer
-> vAvgScore = (fmap sum . sequence . map (scoreSRVA 1000)) allVEnvs
+
+The average score for the SRVA when executed in all possible environments.
+ 
+> vAvgScore :: (Monad m, Functor m) => m Float
+> vAvgScore = let envs   = allVEnvs
+>                 size   = (fromIntegral . length) envs
+>                 scores = (sequence . map (scoreSRVA 1000)) envs
+>             in fmap ((/ size) . sum) scores
+
+**Result:** 1999.25
 
 
 * 2.10
