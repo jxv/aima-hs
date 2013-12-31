@@ -6,6 +6,7 @@
 > import Control.Monad.RWS
 > import Control.Monad.Loops
 > import Control.Arrow
+> import Control.Applicative
 > import Data.List
 
 > boundRange :: (Bounded b, Enum b) => [b]
@@ -28,12 +29,12 @@
 > 
 > instance N.Percept VLoc
 > 
-> data VPercept =
+> data VFloor =
 >     VClean
 >   | VDirty
 >   deriving (Show, Eq, Enum, Bounded)
 > 
-> instance N.Percept VPercept
+> instance N.Percept VFloor
 >  
 > data VAction = 
 >     VLeft
@@ -47,11 +48,12 @@
 > 
 > instance N.Rule VRule
 > 
-> type VSquare = (VLoc, VPercept) 
+> type VSquare = (VLoc, VFloor) 
 > instance N.Percept VSquare
 > 
 > data VEnv = VEnv
->   { vPriori :: [VSquare], vLoc :: VLoc }
+>   { vPriori :: [VSquare]
+>   , vLoc :: VLoc }
 >   deriving (Show, Eq)
 >  
 > vLookupPrior :: [VSquare] -> VLoc -> VSquare
@@ -84,28 +86,26 @@ Otherwise, alternate between tiles.
 SRVA's types over the general implementation.
 
 > 
-> srvaProgram :: (Monad m) => VSquare -> N.SimpleReflexAgent VSquare VSquare VRule VAction m ()
+> srvaProgram :: (Monad m, Functor m) => VSquare -> N.SimpleReflexAgent VSquare VSquare VRule VAction m ()
 > srvaProgram = N.simpleReflexAgentProgram
 
 Score the SRVA over *n*-steps in some environment.
 For each step, it applies its actions onto the environment then scores the result.
  
-> scoreSRVA :: (Monad m, Num a) => Int -> VEnv -> m a 
-> scoreSRVA steps env =
->   do let stepper (s, e) = scoreSRVAStep e >>= \(s', e') -> return (s + s', e')
+> scoreSRVA :: (Monad m, Functor m, Num a) => Int -> VEnv -> m a 
+> scoreSRVA steps env = 
+>   do let stepper (s, e) = (((+s) . vPerformanceMeasure) &&& id) <$> stepSRVAEnv e
 >          runsteps = concatM (replicate steps stepper) 
 >      (score,_) <- runsteps (0, env)
 >      return score
 >  
-> scoreSRVAStep :: (Monad m, Num a) => VEnv -> m (a, VEnv) 
-> scoreSRVAStep env@(VEnv priori loc) =
+> stepSRVAEnv :: (Monad m, Functor m, Num a) => VEnv -> m VEnv
+> stepSRVAEnv env@(VEnv priori loc) =
 >   do let per = (vLookupPrior priori) loc
 >      act <- stepSRVAProgram per
->      let env' = applyVAction env act
->      let score = vPerformanceMeasure env'
->      return (score, env')
+>      return (applyVAction env act)
 > 
-> stepSRVAProgram :: (Monad m) => VSquare -> m VAction
+> stepSRVAProgram :: (Monad m, Functor m) => VSquare -> m VAction
 > stepSRVAProgram p = 
 >   do (_, _, actions) <- runRWST (srvaProgram p) reader ()
 >      return (head actions)
