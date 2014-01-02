@@ -89,14 +89,16 @@ SRVA's types over the general implementation.
 > srvaProgram = N.simpleReflexAgentProgram
 > 
 
+Score the agent within an environment using *n*-steps.
+
 > scoreSRVA :: (Monad m, Num a) => Int -> VEnv -> m a
 > scoreSRVA steps env =
->   do let progs = foldr1 (>>) (replicate steps srvaEnvProgram)
+>   do let progs = foldr1 (>>) (replicate steps stepSRVAEnv)
 >      (_,scores) <- execRWST progs () env
 >      (return . sum) scores
 > 
-> srvaEnvProgram :: (Monad m, Num a) => RWST () [a] VEnv m ()
-> srvaEnvProgram =
+> stepSRVAEnv :: (Monad m, Num a) => RWST () [a] VEnv m ()
+> stepSRVAEnv =
 >   do env@(VEnv priori loc) <- get
 >      let per = (vLookupPrior priori) loc
 >      (_,act:_) <- execRWST (srvaProgram per) (id, vRuleMatch, id, boundRange) () 
