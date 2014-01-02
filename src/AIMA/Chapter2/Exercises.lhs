@@ -12,15 +12,15 @@
 > boundRange :: (Bounded b, Enum b) => [b]
 > boundRange = [minBound..maxBound] 
 
-* 2.1
-* 2.2
-* 2.3
-* 2.4
-* 2.5
-* 2.6
-* 2.7
+__2.1__
+__2.2__
+__2.3__
+__2.4__
+__2.5__
+__2.6__
+__2.7__
 
-* 2.8
+__2.8__
 
 > data VLoc = 
 >     VA
@@ -69,7 +69,7 @@
 >   where measure (_, p) = if p == VClean then 1 else 0
  
 
-* 2.9
+__2.9__
 
 SRVA (Simple Reflex Vacuum Agent)
 
@@ -79,64 +79,58 @@ Otherwise, alternate between tiles.
 > instance N.AgentState VSquare
 >  
 > vRuleMatch :: VSquare -> [VRule] -> VRule
-> vRuleMatch sq rules = case sq of (_, VDirty)  -> VSuck
->                                  (VA, VClean) -> VRight
->                                  (VB, VClean) -> VLeft
+> vRuleMatch sq _ = case sq of (_, VDirty)  -> VSuck
+>                              (VA, VClean) -> VRight
+>                              (VB, VClean) -> VLeft
 
 SRVA's types over the general implementation.
 
-> 
-> srvaProgram :: (Monad m, Functor m) => VSquare -> N.SimpleReflexAgent VSquare VSquare VRule VAction m ()
+> srvaProgram :: (Monad m) => VSquare -> N.SimpleReflexAgent VSquare VSquare VRule VAction m ()
 > srvaProgram = N.simpleReflexAgentProgram
+> 
 
-Score the SRVA over *n*-steps in some environment.
-For each step, it applies its actions onto the environment then scores the result.
- 
-> scoreSRVA :: (Monad m, Functor m, Num a) => Int -> VEnv -> m a 
-> scoreSRVA steps env = 
->   do let stepper (s, e) = (((+s) . vPerformanceMeasure) &&& id) <$> stepSRVAEnv e
->          runsteps = concatM (replicate steps stepper) 
->      (score,_) <- runsteps (0, env)
->      return score
+> scoreSRVA :: (Monad m, Num a) => Int -> VEnv -> m a
+> scoreSRVA steps env =
+>   do let progs = foldr1 (>>) (replicate steps srvaEnvProgram)
+>      (_,scores) <- execRWST progs () env
+>      (return . sum) scores
+> 
+> srvaEnvProgram :: (Monad m, Num a) => RWST () [a] VEnv m ()
+> srvaEnvProgram =
+>   do env@(VEnv priori loc) <- get
+>      let per = (vLookupPrior priori) loc
+>      (_,act:_) <- execRWST (srvaProgram per) (id, vRuleMatch, id, boundRange) () 
+>      let env' = applyVAction env act
+>      put env'
+>      tell [vPerformanceMeasure env']
 >  
-> stepSRVAEnv :: (Monad m, Functor m, Num a) => VEnv -> m VEnv
-> stepSRVAEnv env@(VEnv priori loc) =
->   do let per = (vLookupPrior priori) loc
->      act <- stepSRVAProgram per
->      return (applyVAction env act)
-> 
-> stepSRVAProgram :: (Monad m, Functor m) => VSquare -> m VAction
-> stepSRVAProgram p = 
->   do (_, _, actions) <- runRWST (srvaProgram p) reader ()
->      return (head actions)
->   where reader = (id, vRuleMatch, id, boundRange)
-> 
 > applyVAction :: VEnv -> VAction -> VEnv
 > applyVAction (VEnv priori loc) act =
->   let percept = (snd . vLookupPrior priori) loc
->       (loc', percept') = case act of VSuck  -> (loc, VClean)
->                                      VLeft  -> (VA, percept)
->                                      VRight -> (VB, percept)
->       priori' = vUpdatePrior priori (loc, percept')
+>   let floor = (snd . vLookupPrior priori) loc
+>       (loc', floor') = case act of VSuck  -> (loc, VClean)
+>                                    VLeft  -> (VA, floor)
+>                                    VRight -> (VB, floor)
+>       priori' = vUpdatePrior priori (loc, floor')
 >   in (VEnv priori' loc')
 
-Generates all possible vacuum world environments using each attributes' boundaries.
+Generates all possible vacuum world environments using each attribute's boundaries.
 
 > allVEnvs :: [VEnv]
 > allVEnvs = [VEnv [(VA, a), (VB, b)] loc | loc <- boundRange, a <- boundRange, b <- boundRange]
 
 The average score for the SRVA when executed in all possible environments.
  
-> vAvgScore :: (Monad m, Functor m) => m Float
-> vAvgScore = let envs   = allVEnvs
->                 size   = (fromIntegral . length) envs
->                 scores = (sequence . map (scoreSRVA 1000)) envs
->             in fmap ((/ size) . sum) scores
+> vAvgScore :: (Monad m) => m Float
+> vAvgScore =
+>   do let envs = allVEnvs
+>          size = (fromIntegral . length) envs
+>      scores <- (sequence . map (scoreSRVA 1000)) envs
+>      return ((sum scores) / size)
 
-**Result:** 1999.25
+*Result: 1999.25*
 
+__2.10__
+__2.11__
+__2.12__
+__2.13__
 
-* 2.10
-* 2.11
-* 2.12
-* 2.13
