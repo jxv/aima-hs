@@ -4,10 +4,6 @@
 > module AIMA.Chapter2.Exercises where
 > import qualified AIMA.Chapter2.Notes as N
 > import Control.Monad.RWS
-> import Control.Monad.Loops
-> import Control.Arrow
-> import Control.Applicative
-> import Data.List
 > import Data.Maybe
 
 > bndRng :: (Bounded b, Enum b) => [b]
@@ -83,7 +79,7 @@ Otherwise, alternate between tiles.
 > srvaProgram per = 
 >   let st = per -- | Interpret input
 >       rule = st -- | Rule match
->       act = case per of -- | Rule action
+>       act = case rule of -- | Rule action
 >               (_, VDirty)  -> VSuck 
 >               (VA, VClean) -> VRight
 >               (VB, VClean) -> VLeft
@@ -95,7 +91,7 @@ Score the agent within an environment using *n*-steps.
 > scoreSRVA stepcount env =
 >   let steps = foldr1 (>>) (replicate stepcount stepSRVAEnv)
 >       (_,scores) = execRWS steps () env
->   in (sum scores)
+>   in sum scores
 > 
 > stepSRVAEnv :: (Num a) => RWS () [a] VEnv ()
 > stepSRVAEnv =
@@ -108,12 +104,12 @@ Score the agent within an environment using *n*-steps.
 >  
 > applyVAction :: VEnv -> VAction -> VEnv
 > applyVAction (VEnv priori loc) act =
->   let floor = (snd . vLookupPrior priori) loc
->       (loc', floor') = case act of VSuck  -> (loc, VClean)
->                                    VLeft  -> (VA, floor)
->                                    VRight -> (VB, floor)
->       priori' = vUpdatePrior priori (loc, floor')
->   in (VEnv priori' loc')
+>   let flor = (snd . vLookupPrior priori) loc
+>       (loc', flor') = case act of VSuck  -> (loc, VClean)
+>                                   VLeft  -> (VA, flor)
+>                                   VRight -> (VB, flor)
+>       priori' = vUpdatePrior priori (loc, flor')
+>   in VEnv priori' loc'
 
 Generates all possible vacuum world environments using each attribute's boundaries.
 
@@ -134,61 +130,42 @@ __2.10__
 __2.10.a__ No, because the agent cannot remember or sense how dirty or clean is the adjacent location. It will never always make the correct choice.
 __2.10.b__ Yes, because the agent can remember the previously visited locations.
 
-> instance N.Action (Maybe VAction)
-> instance N.Rule (Maybe VAction)
-> instance N.Model ()
-> instance N.AgentState [VSquare]
+> srsvaProgram :: [VSquare] -> VSquare -> ([VSquare], Maybe VAction)
+> srsvaProgram st per = 
+>   let st' = per : st -- Update state
+>       rule = ruleMatch st' -- Rule match
+>       act = rule -- Rule rction
+>   in (st', act) -- Return updated state and possible action
+>   where
+>     ruleMatch states = 
+>       if and [(loc, VClean) `elem` states | loc <- bndRng] 
+>          then Nothing
+>          else Just $ case (head states) of (_, VDirty)  -> VSuck
+>                                            (VA, VClean) -> VRight
+>                                            (VB, VClean) -> VLeft
 
-General simple reflex agent program with state
-
-> type UpdateState s p = s -> p -> s
-> 
-> type SimpleReflexStateAgent s p r a = RWST (UpdateState s p, N.RuleMatch s r, N.RuleAction r a, [r])
->                                       [a]
->                                       s
-> 
-> simpleReflexStateAgentProgram :: (N.Percept p, N.Rule r, N.Action a, N.AgentState s, Monad m) =>
->                                  p -> SimpleReflexStateAgent s p r a m ()
-> simpleReflexStateAgentProgram p =
->   do (updateState, ruleMatch, ruleAction, rules) <- ask
->      st <- get
->      let st' = updateState st p
->          rule = ruleMatch st' rules
->          action = ruleAction rule
->      put st'
->      tell [action]
-
-> srsvaProgram :: (Monad m) => VSquare -> SimpleReflexStateAgent [VSquare] VSquare (Maybe VRule) (Maybe VAction) m ()
-> srsvaProgram = simpleReflexStateAgentProgram
-
-> scoreSRSVA :: (Monad m, Num a) => Int -> VEnv -> m a
-> scoreSRSVA steps env =
->   do let progs = foldr1 (>>) (replicate steps stepSRSVAEnv)
->      (_,scores) <- execRWST progs () ([], env)
->      (return . sum) scores
+> scoreSRSVA :: (Num a) => Int -> VEnv -> a
+> scoreSRSVA stepcount env =
+>   let steps = foldr1 (>>) (replicate stepcount stepSRSVAEnv)
+>       (_, scores) = execRWS steps () ([], env)
+>   in sum scores
 > 
 >  
-> stepSRSVAEnv :: (Monad m, Num a) => RWST () [a] ([VSquare],VEnv) m ()
+> stepSRSVAEnv :: (Num a) => RWS () [a] ([VSquare],VEnv) ()
 > stepSRSVAEnv =
 >   do (st, env@(VEnv priori loc)) <- get
 >      let per = (vLookupPrior priori) loc
->      (st',mact:_) <- execRWST (srsvaProgram per) (updatestate, rulematch, id, []) st
->      let (env', moves) = fromMaybe (env, False) $
->                            do act <- mact
->                               return ((applyVAction env act), (or . map (== act)) [VLeft, VRight])
->          perf = vPerformanceMeasure env' - if moves
->                                              then 1
->                                              else 0
+>          (st', mact) = srsvaProgram st per
+>          (env', doesmove) = fromMaybe (env, False) (mayApply env mact)
+>          perf = vPerformanceMeasure env' - (if doesmove then 1 else 0)
 >      put (st', env')
 >      tell [perf]
 >   where
->     updatestate states per = per : states
->     rulematch states _ = if and [(loc, VClean) `elem` states | loc <- bndRng] 
->                             then Nothing
->                             else Just $ case (head states) of (_, VDirty)  -> VSuck
->                                                               (VA, VClean) -> VRight
->                                                               (VB, VClean) -> VLeft
->                           
+>     mayApply env mact =
+>       do act <- mact
+>          let env' = applyVAction env act
+>              doesmove = (or . map (== act)) [VLeft, VRight]
+>          return (env', doesmove)
 
 __2.10.c__ The former, simple reflex vacuum agent, can behave perfectly rational now.
            The latter, simple reflex state vacuum agent, won't need to sense adjacent locations, so it has a slight improve to perfect rationality. 
