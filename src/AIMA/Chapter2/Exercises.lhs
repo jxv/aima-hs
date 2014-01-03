@@ -13,7 +13,9 @@
 > boundRange :: (Bounded b, Enum b) => [b]
 > boundRange = [minBound..maxBound] 
 
-__2.1__
+__2.1__ 
+
+
 __2.2__
 __2.3__
 __2.4__
@@ -77,33 +79,30 @@ SRVA (Simple Reflex Vacuum Agent)
 If the current square is dirty, suck.
 Otherwise, alternate between tiles.
 
-> instance N.AgentState VSquare
->  
-> vRuleMatch :: VSquare -> [VRule] -> VRule
-> vRuleMatch sq _ = case sq of (_, VDirty)  -> VSuck
->                              (VA, VClean) -> VRight
->                              (VB, VClean) -> VLeft
-
-SRVA's types over the general implementation.
-
-> srvaProgram :: (Monad m) => VSquare -> N.SimpleReflexAgent VSquare VSquare VRule VAction m ()
-> srvaProgram = N.simpleReflexAgentProgram
-> 
+> srvaProgram :: VSquare -> VAction
+> srvaProgram per = 
+>   let st = per -- | Interpret input
+>       rule = st -- | Rule match
+>       act = case per of -- | Rule action
+>               (_, VDirty)  -> VSuck 
+>               (VA, VClean) -> VRight
+>               (VB, VClean) -> VLeft
+>   in act -- | Return action
 
 Score the agent within an environment using *n*-steps.
 
-> scoreSRVA :: (Monad m, Num a) => Int -> VEnv -> m a
-> scoreSRVA steps env =
->   do let progs = foldr1 (>>) (replicate steps stepSRVAEnv)
->      (_,scores) <- execRWST progs () env
->      (return . sum) scores
+> scoreSRVA :: (Num a) => Int -> VEnv -> a
+> scoreSRVA stepcount env =
+>   let steps = foldr1 (>>) (replicate stepcount stepSRVAEnv)
+>       (_,scores) = execRWS steps () env
+>   in (sum scores)
 > 
-> stepSRVAEnv :: (Monad m, Num a) => RWST () [a] VEnv m ()
+> stepSRVAEnv :: (Num a) => RWS () [a] VEnv ()
 > stepSRVAEnv =
 >   do env@(VEnv priori loc) <- get
 >      let per = (vLookupPrior priori) loc
->      (_,act:_) <- execRWST (srvaProgram per) (id, vRuleMatch, id, boundRange) () 
->      let env' = applyVAction env act
+>          act = srvaProgram per
+>          env' = applyVAction env act
 >      put env'
 >      tell [vPerformanceMeasure env']
 >  
@@ -123,12 +122,11 @@ Generates all possible vacuum world environments using each attribute's boundari
 
 The average score for the SRVA when executed in all possible environments.
  
-> vAvgScore :: (Monad m) => m Float
-> vAvgScore =
->   do let envs = allVEnvs
->          size = (fromIntegral . length) envs
->      scores <- (sequence . map (scoreSRVA 1000)) envs
->      return ((sum scores) / size)
+> avgSRVAScore :: Float
+> avgSRVAScore =
+>   let size = (fromIntegral . length) allVEnvs
+>       scores = map (scoreSRVA 1000) allVEnvs
+>   in (sum scores) / size
 
 *Result: 1999.25*
 
