@@ -10,8 +10,8 @@
 > import Data.List
 > import Data.Maybe
 
-> boundRange :: (Bounded b, Enum b) => [b]
-> boundRange = [minBound..maxBound] 
+> bndRng :: (Bounded b, Enum b) => [b]
+> bndRng = [minBound..maxBound] 
 
 __2.1__ 
 
@@ -118,7 +118,7 @@ Score the agent within an environment using *n*-steps.
 Generates all possible vacuum world environments using each attribute's boundaries.
 
 > allVEnvs :: [VEnv]
-> allVEnvs = [VEnv [(VA, a), (VB, b)] loc | loc <- boundRange, a <- boundRange, b <- boundRange]
+> allVEnvs = [VEnv [(VA, fa), (VB, fb)] loc | loc <- bndRng, fa <- bndRng, fb <- bndRng]
 
 The average score for the SRVA when executed in all possible environments.
  
@@ -183,7 +183,7 @@ General simple reflex agent program with state
 >      tell [perf]
 >   where
 >     updatestate states per = per : states
->     rulematch states _ = if and [(loc, VClean) `elem` states | loc <- boundRange] 
+>     rulematch states _ = if and [(loc, VClean) `elem` states | loc <- bndRng] 
 >                             then Nothing
 >                             else Just $ case (head states) of (_, VDirty)  -> VSuck
 >                                                               (VA, VClean) -> VRight
