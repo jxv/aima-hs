@@ -151,8 +151,8 @@ Table Driven Agent
 > simpleReflexAgentProgram p =
 >   do (interpretInput, ruleMatch, ruleAction, rules) <- ask
 >      let st = interpretInput p
->      let rule = ruleMatch st rules
->      let action = ruleAction rule
+>          rule = ruleMatch st rules
+>          action = ruleAction rule
 >      tell [action]
 
 * The agent's disadvantage is its present focused intelligence, and it's dysfunctional without sensors.
