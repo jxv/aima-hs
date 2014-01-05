@@ -4,7 +4,10 @@
 > module AIMA.Chapter2.Exercises where
 > import qualified AIMA.Chapter2.Notes as N
 > import Control.Monad.RWS
+> import Control.Monad.State
 > import Data.Maybe
+> import Data.List
+> import Data.List.Split
 > import System.Random
 
 > bndRng :: (Bounded b, Enum b) => [b]
@@ -13,10 +16,9 @@
 > io :: (MonadIO m) => IO a -> m a
 > io = liftIO
 > 
-> randomREnum :: (Enum e) => (e, e) -> IO e
-> randomREnum (low,high) = 
->   do r <- randomRIO (fromEnum low, fromEnum high)
->      return (toEnum r)
+> randEnum :: (Enum e) => (e, e) -> IO e
+> randEnum (low,high) = do r <- randomRIO (fromEnum low, fromEnum high)
+>                          return (toEnum r)
 
 __2.1__ 
 
@@ -203,114 +205,126 @@ __2.11__
 > 
 > type V2Size = (Int,Int)
 > type V2Loc = (Int,Int)
+> type V2Square = (V2Loc,V2Floor)
 > 
 > data V2Env = V2Env
->   { v2Priori :: [V2Floor]
+>   { v2Priori :: [V2Square]
 >   , v2Size :: V2Size
 >   , v2Loc :: V2Loc }
 >   deriving (Show, Eq)
   
-> v2LookupPrior :: [V2Floor] -> V2Size -> V2Loc -> V2Floor
-> v2LookupPrior priori (w,_) (x,y) = priori !! (w * y + x)
+> v2LookupPrior :: V2Env -> V2Loc -> V2Square
+> v2LookupPrior (V2Env priori (w,_) _) (x,y) = priori !! (w * y + x)
 > 
-> v2UpdatePrior :: [V2Floor] -> V2Size -> V2Loc -> V2Floor -> [V2Floor]
-> v2UpdatePrior priori (w,_) (x,y) flr = let idx = w * y + x
->                                        in take idx priori ++ [flr] ++ drop (idx + 1) priori
+> v2UpdatePrior :: V2Env -> V2Square -> [V2Square]
+> v2UpdatePrior (V2Env priori (w,_) _) sq@((x,y), flr) = let idx = w * y + x
+>                                                        in take idx priori ++ [sq] ++ drop (idx + 1) priori
 
 > v2PerformanceMeasure :: (Num a) => V2Env -> a
 > v2PerformanceMeasure env = let measure V2Dirty    = (-1)
 >                                measure V2Obstacle = 0 
 >                                measure V2Clean    = 1
->                            in (sum . map measure) (v2Priori env)
+>                            in (sum . map (measure . snd) . v2Priori) env
  
 > -- | Takes in width and height into a randomly generated environment
 > mkV2Env :: Int -> Int -> IO V2Env
-> mkV2Env w h =
->   do let randflr = randomREnum (minBound, maxBound :: V2Floor)
->      priori <- sequence (replicate (w * h) randflr)
->      let openloc = (map snd . filter ((/= V2Obstacle) . fst) . zip priori)
->                      [(x,y) | y<-[0..(h-1)], x<-[0..(w-1)]]
->      idx <- randomRIO (0, length openloc - 1)
->      let loc = openloc !! idx
->      return (V2Env priori (w,h) loc)
+> mkV2Env w h = do let randflr = randEnum (minBound, maxBound)
+>                      idxs = [(x,y) | y <- [0..(h-1)], x <- [0..(w-1)]]
+>                      zipper i mf = mf >>= \f -> return (i,f)
+>                      mrows = zipWith zipper idxs (repeat randflr)
+>                  priori <- sequence mrows
+>                  let openloc = (map fst . filter ((/= V2Obstacle) . snd)) priori
+>                  idx <- randomRIO (0, length openloc - 1)
+>                  let loc = openloc !! idx
+>                  return (V2Env priori (w,h) loc)
 
+Simple Reflex Randomized Vacuum Agent
 
-> srrvaProgram :: V2Floor -> IO V2Action
-> srrvaProgram per = 
->   let st = per -- | Interpret input
->       rule = st -- | Rule match
->       act = srrvaRuleAction rule  -- | Rule action
->   in act -- | Return action
+> srrvaProgram :: V2Square -> IO V2Action
+> srrvaProgram per = let st = per -- | Interpret input
+>                        rule = snd st -- | Rule match
+>                        act = srrvaRuleAction rule  -- | Rule action
+>                    in act -- | Return action
 > 
 > srrvaRuleAction :: V2Floor -> IO V2Action
 > srrvaRuleAction rule = case rule of V2Dirty -> return V2Suck 
->                                     _       -> randomREnum (V2Left, V2Down)
+>                                     _       -> randEnum (V2Left, V2Down)
 
 > scoreSRRVA :: (Num a) => Int -> V2Env -> IO a
-> scoreSRRVA stepcount env =
->   do let steps = foldr1 (>>) (replicate stepcount stepSRRVAEnv)
->      (_,scores) <- execRWST steps () env
->      return (sum scores)
+> scoreSRRVA stepcount env = do let steps = foldr1 (>>) (replicate stepcount stepSRRVAEnv)
+>                               (_,scores) <- execRWST steps () env
+>                               return (sum scores)
 > 
 > stepSRRVAEnv :: (Num a) => RWST () [a] V2Env IO ()
-> stepSRRVAEnv =
->   do env@(V2Env priori size loc) <- get
->      let per = v2LookupPrior priori size loc
->      act <- (io . srrvaProgram) per
->      let env' = applyV2Action env act
->      put env'
->      tell [v2PerformanceMeasure env']
+> stepSRRVAEnv = do env@(V2Env priori size loc) <- get
+>                   let per = v2LookupPrior env loc
+>                   act <- (io . srrvaProgram) per
+>                   let env' = applyV2Action env act
+>                   put env'
+>                   tell [v2PerformanceMeasure env']
 > 
-> validV2Loc :: [V2Floor] -> V2Size -> V2Loc -> Bool
-> validV2Loc priori size@(w,h) loc@(x,y) =  x >= 0 && x < w
->                                        && y >= 0 && y < h 
->                                        && v2LookupPrior priori size loc /= V2Obstacle
+> v2ValidLoc :: V2Env -> V2Loc -> Bool
+> v2ValidLoc env@(V2Env _ size@(w,h) _) loc@(x,y) =    x >= 0 && x < w
+>                                                   && y >= 0 && y < h 
+>                                                   && snd (v2LookupPrior env loc) /= V2Obstacle
 > 
 > applyV2Action :: V2Env -> V2Action -> V2Env
-> applyV2Action env@(V2Env priori size loc@(x,y)) act =
->   let flr = v2LookupPrior priori size loc
->       loc' = case act of V2Suck  -> loc
->                          V2Left  -> (x-1,y)
->                          V2Right -> (x+1,y)
->                          V2Up    -> (x,y-1)
->                          V2Down  -> (x,y+1)
->       loc'' = if validV2Loc priori size loc' then loc' else loc
->       flr' = if act == V2Suck then V2Clean else flr
->       priori' = v2UpdatePrior priori size loc'' flr'
->   in V2Env priori' size loc''
+> applyV2Action env@(V2Env priori size loc@(x,y)) act = let flr = snd (v2LookupPrior env loc)
+>                                                           loc' = case act of V2Suck  -> loc
+>                                                                              V2Left  -> (x - 1, y    )
+>                                                                              V2Right -> (x + 1, y    )
+>                                                                              V2Up    -> (x    , y - 1)
+>                                                                              V2Down  -> (x    , y + 1)
+>                                                           loc'' = if v2ValidLoc env loc' then loc' else loc
+>                                                           flr' = if act == V2Suck then V2Clean else flr
+>                                                           priori' = v2UpdatePrior env (loc'', flr')
+>                                                       in V2Env priori' size loc''
 
 > testV2Envs :: IO [V2Env]
 > testV2Envs = sequence [mkV2Env w h | (w,h)<-replicate 10 (10,10)]
 
-> avgSRRVAScore :: [V2Env] -> IO Float
-> avgSRRVAScore envs =
->   do let size = (fromIntegral . length) envs
->      scores <- (sequence . map (scoreSRRVA 1000)) envs
->      return ((sum scores) / size)
+> avgSRRVAScore :: [V2Env] -> Int -> IO Float
+> avgSRRVAScore envs stepcount = do let size = (fromIntegral . length) envs
+>                                   scores <- (sequence . map (scoreSRRVA stepcount)) envs
+>                                   return ((sum scores) / size)
 
 > v2PrintEnv :: V2Env -> IO ()
-> v2PrintEnv env@(V2Env priori size@(w,h) loc@(x,y)) = 
->   do let rows = ($ priori) $ fix $ \loop ps -> if null ps then [] else take w ps : loop (drop w ps)
->          shw V2Clean    = "."
->          shw V2Dirty    = "o"
->          shw V2Obstacle = "X"
->          prnt = putStr . shw
->      mapM_ (\r -> mapM_ prnt r >> putChar '\n') rows
->      print loc
-> 
+> v2PrintEnv (V2Env priori (w,_) loc) = do let shw V2Clean    = '.'
+>                                              shw V2Dirty    = 'o'
+>                                              shw V2Obstacle = 'X'
+>                                              rows = (unlines . chunksOf w . map (shw . snd)) priori
+>                                          putStr rows
+>                                          print loc
 
 * c.
 
-> -- | Trapped vacuum agent in the top left corner by obstacles
+> -- | Trapped vacuum agent by obstacles in the top left corner
 > v2PoorScoringEnv :: V2Env
 > v2PoorScoringEnv = V2Env priori size loc
 >   where size = (10,10)
 >         loc  = (0,0)
->         priori = V2Clean : V2Obstacle : (replicate 8 V2Dirty)
->                  ++ [V2Obstacle] ++ (replicate 89 V2Dirty)
+>         flrs = V2Clean : V2Obstacle : (replicate 8 V2Dirty)
+>                ++ [V2Obstacle] ++ (replicate 89 V2Dirty)
+>         priori = zip [(x,y) | y<-[0..9], x<-[0..9]] flrs
 > 
 
-* d.
+* d. Yes.
+
+> rsvaProgram :: V2Square -> StateT (V2Loc, [V2Loc], Maybe V2Action) IO V2Action
+> rsvaProgram per = 
+>   do (lastloc, lochist, mlastact) <- get
+>      let st = per -- | Update State
+>          rule = snd st -- | Rule match
+>          act = rsvaRuleAction rule
+>      put (lastloc, lochist, mlastact)
+>      io act -- | Return action
+> 
+> rsvaRuleAction :: V2Floor -> IO V2Action
+> rsvaRuleAction rule = case rule of V2Dirty -> return V2Suck 
+>                                    _       -> randEnum (V2Left, V2Down)
+
+
+
 
 __2.12__
 
