@@ -5,18 +5,37 @@
 > import qualified AIMA.Chapter2.Notes as N
 > import Control.Monad.RWS
 > import Data.Maybe
+> import System.Random
 
 > bndRng :: (Bounded b, Enum b) => [b]
 > bndRng = [minBound..maxBound] 
+> 
+> io :: (MonadIO m) => IO a -> m a
+> io = liftIO
+> 
+> randomREnum :: (Enum e) => (e, e) -> IO e
+> randomREnum (low,high) = 
+>   do r <- randomRIO (fromEnum low, fromEnum high)
+>      return (toEnum r)
 
 __2.1__ 
 
 
 __2.2__
+
+
 __2.3__
+
+
 __2.4__
+
+
 __2.5__
+
+
 __2.6__
+
+
 __2.7__
 
 __2.8__
@@ -26,35 +45,24 @@ __2.8__
 >   | VB
 >   deriving (Show, Eq, Enum, Bounded)
 > 
-> instance N.Percept VLoc
-> 
 > data VFloor =
 >     VClean
 >   | VDirty
 >   deriving (Show, Eq, Enum, Bounded)
 > 
-> instance N.Percept VFloor
->  
 > data VAction = 
 >     VLeft
 >   | VRight
 >   | VSuck
 >   deriving (Show, Eq, Enum, Bounded)
 >  
-> instance N.Action VAction
-> 
-> type VRule = VAction
-> 
-> instance N.Rule VRule
-> 
 > type VSquare = (VLoc, VFloor) 
-> instance N.Percept VSquare
 > 
 > data VEnv = VEnv
 >   { vPriori :: [VSquare]
 >   , vLoc :: VLoc }
 >   deriving (Show, Eq)
->  
+  
 > vLookupPrior :: [VSquare] -> VLoc -> VSquare
 > vLookupPrior priori loc = priori !! (fromEnum loc)
 > 
@@ -75,14 +83,18 @@ SRVA (Simple Reflex Vacuum Agent)
 If the current square is dirty, suck.
 Otherwise, alternate between tiles.
 
+> srvaRuleAction :: VSquare -> VAction
+> srvaRuleAction rule =
+>   case rule of -- | Rule action
+>     (_, VDirty)  -> VSuck 
+>     (VA, VClean) -> VRight
+>     (VB, VClean) -> VLeft
+> 
 > srvaProgram :: VSquare -> VAction
 > srvaProgram per = 
 >   let st = per -- | Interpret input
 >       rule = st -- | Rule match
->       act = case rule of -- | Rule action
->               (_, VDirty)  -> VSuck 
->               (VA, VClean) -> VRight
->               (VB, VClean) -> VLeft
+>       act = srvaRuleAction rule  -- | Rule action
 >   in act -- | Return action
 
 Score the agent within an environment using *n*-steps.
@@ -104,11 +116,11 @@ Score the agent within an environment using *n*-steps.
 >  
 > applyVAction :: VEnv -> VAction -> VEnv
 > applyVAction (VEnv priori loc) act =
->   let flor = (snd . vLookupPrior priori) loc
->       (loc', flor') = case act of VSuck  -> (loc, VClean)
->                                   VLeft  -> (VA, flor)
->                                   VRight -> (VB, flor)
->       priori' = vUpdatePrior priori (loc, flor')
+>   let flr = (snd . vLookupPrior priori) loc
+>       (loc', flr') = case act of VSuck  -> (loc, VClean)
+>                                  VLeft  -> (VA, flr)
+>                                  VRight -> (VB, flr)
+>       priori' = vUpdatePrior priori (loc, flr')
 >   in VEnv priori' loc'
 
 Generates all possible vacuum world environments using each attribute's boundaries.
@@ -122,32 +134,32 @@ The average score for the SRVA when executed in all possible environments.
 > avgSRVAScore =
 >   let size = (fromIntegral . length) allVEnvs
 >       scores = map (scoreSRVA 1000) allVEnvs
->   in (sum scores) / size
+>   in sum scores / size
 
 *Result: 1999.25*
 
 __2.10__
-__2.10.a__ No, because the agent cannot remember or sense how dirty or clean is the adjacent location. It will never always make the correct choice.
-__2.10.b__ Yes, because the agent can remember the previously visited locations.
+
+* a. No, because the agent cannot remember or sense how dirty or clean is the adjacent location. It will never always make the correct choice.
+
+* b. Yes, because the agent can remember the previously visited locations.
 
 > srsvaProgram :: [VSquare] -> VSquare -> ([VSquare], Maybe VAction)
 > srsvaProgram st per = 
 >   let st' = per : st -- Update state
->       rule = ruleMatch st' -- Rule match
->       act = rule -- Rule rction
->   in (st', act) -- Return updated state and possible action
+>       rule = st' -- Rule match
+>       act = raction rule -- Rule action
+>   in (st', act) -- Return updated state and maybe action
 >   where
->     ruleMatch states = 
->       if and [(loc, VClean) `elem` states | loc <- bndRng] 
+>     raction perhist = 
+>       if and [(loc, VClean) `elem` perhist | loc <- bndRng] 
 >          then Nothing
->          else Just $ case (head states) of (_, VDirty)  -> VSuck
->                                            (VA, VClean) -> VRight
->                                            (VB, VClean) -> VLeft
+>          else (Just . srvaRuleAction . head) perhist
 
 > scoreSRSVA :: (Num a) => Int -> VEnv -> a
 > scoreSRSVA stepcount env =
 >   let steps = foldr1 (>>) (replicate stepcount stepSRSVAEnv)
->       (_, scores) = execRWS steps () ([], env)
+>       (_,scores) = execRWS steps () ([], env)
 >   in sum scores
 > 
 >  
@@ -167,10 +179,140 @@ __2.10.b__ Yes, because the agent can remember the previously visited locations.
 >              doesmove = (or . map (== act)) [VLeft, VRight]
 >          return (env', doesmove)
 
-__2.10.c__ The former, simple reflex vacuum agent, can behave perfectly rational now.
-           The latter, simple reflex state vacuum agent, won't need to sense adjacent locations, so it has a slight improve to perfect rationality. 
+* c. The former, simple reflex vacuum agent, can behave perfectly rational now.
+     The latter, simple reflex state vacuum agent, won't need to sense adjacent locations, so it has a slight improve to perfect rationality. 
 
 __2.11__
+
+* a. No, such an agent, which lacks the ability to store and remember state, cannot benefit from exploration to make (perfect) rational decisions.
+* b. Yes.
+
+> data V2Action =
+>     V2Suck
+>   | V2Left
+>   | V2Right
+>   | V2Up
+>   | V2Down
+>   deriving (Show, Eq, Enum, Bounded)
+> 
+> data V2Floor = 
+>     V2Clean
+>   | V2Dirty
+>   | V2Obstacle
+>   deriving (Show, Eq, Enum, Bounded)
+> 
+> type V2Size = (Int,Int)
+> type V2Loc = (Int,Int)
+> 
+> data V2Env = V2Env
+>   { v2Priori :: [V2Floor]
+>   , v2Size :: V2Size
+>   , v2Loc :: V2Loc }
+>   deriving (Show, Eq)
+  
+> v2LookupPrior :: [V2Floor] -> V2Size -> V2Loc -> V2Floor
+> v2LookupPrior priori (w,_) (x,y) = priori !! (w * y + x)
+> 
+> v2UpdatePrior :: [V2Floor] -> V2Size -> V2Loc -> V2Floor -> [V2Floor]
+> v2UpdatePrior priori (w,_) (x,y) flr = let idx = w * y + x
+>                                        in take idx priori ++ [flr] ++ drop (idx + 1) priori
+
+> v2PerformanceMeasure :: (Num a) => V2Env -> a
+> v2PerformanceMeasure env = let measure V2Dirty    = (-1)
+>                                measure V2Obstacle = 0 
+>                                measure V2Clean    = 1
+>                            in (sum . map measure) (v2Priori env)
+ 
+> -- | Takes in width and height into a randomly generated environment
+> mkV2Env :: Int -> Int -> IO V2Env
+> mkV2Env w h =
+>   do let randflr = randomREnum (minBound, maxBound :: V2Floor)
+>      priori <- sequence (replicate (w * h) randflr)
+>      let openloc = (map snd . filter ((/= V2Obstacle) . fst) . zip priori)
+>                      [(x,y) | y<-[0..(h-1)], x<-[0..(w-1)]]
+>      idx <- randomRIO (0, length openloc - 1)
+>      let loc = openloc !! idx
+>      return (V2Env priori (w,h) loc)
+
+
+> srrvaProgram :: V2Floor -> IO V2Action
+> srrvaProgram per = 
+>   let st = per -- | Interpret input
+>       rule = st -- | Rule match
+>       act = srrvaRuleAction rule  -- | Rule action
+>   in act -- | Return action
+> 
+> srrvaRuleAction :: V2Floor -> IO V2Action
+> srrvaRuleAction rule = case rule of V2Dirty -> return V2Suck 
+>                                     _       -> randomREnum (V2Left, V2Down)
+
+> scoreSRRVA :: (Num a) => Int -> V2Env -> IO a
+> scoreSRRVA stepcount env =
+>   do let steps = foldr1 (>>) (replicate stepcount stepSRRVAEnv)
+>      (_,scores) <- execRWST steps () env
+>      return (sum scores)
+> 
+> stepSRRVAEnv :: (Num a) => RWST () [a] V2Env IO ()
+> stepSRRVAEnv =
+>   do env@(V2Env priori size loc) <- get
+>      let per = v2LookupPrior priori size loc
+>      act <- (io . srrvaProgram) per
+>      let env' = applyV2Action env act
+>      put env'
+>      tell [v2PerformanceMeasure env']
+> 
+> validV2Loc :: [V2Floor] -> V2Size -> V2Loc -> Bool
+> validV2Loc priori size@(w,h) loc@(x,y) =  x >= 0 && x < w
+>                                        && y >= 0 && y < h 
+>                                        && v2LookupPrior priori size loc /= V2Obstacle
+> 
+> applyV2Action :: V2Env -> V2Action -> V2Env
+> applyV2Action env@(V2Env priori size loc@(x,y)) act =
+>   let flr = v2LookupPrior priori size loc
+>       loc' = case act of V2Suck  -> loc
+>                          V2Left  -> (x-1,y)
+>                          V2Right -> (x+1,y)
+>                          V2Up    -> (x,y-1)
+>                          V2Down  -> (x,y+1)
+>       loc'' = if validV2Loc priori size loc' then loc' else loc
+>       flr' = if act == V2Suck then V2Clean else flr
+>       priori' = v2UpdatePrior priori size loc'' flr'
+>   in V2Env priori' size loc''
+
+> testV2Envs :: IO [V2Env]
+> testV2Envs = sequence [mkV2Env w h | (w,h)<-replicate 10 (10,10)]
+
+> avgSRRVAScore :: [V2Env] -> IO Float
+> avgSRRVAScore envs =
+>   do let size = (fromIntegral . length) envs
+>      scores <- (sequence . map (scoreSRRVA 1000)) envs
+>      return ((sum scores) / size)
+
+> v2PrintEnv :: V2Env -> IO ()
+> v2PrintEnv env@(V2Env priori size@(w,h) loc@(x,y)) = 
+>   do let rows = ($ priori) $ fix $ \loop ps -> if null ps then [] else take w ps : loop (drop w ps)
+>          shw V2Clean    = "."
+>          shw V2Dirty    = "o"
+>          shw V2Obstacle = "X"
+>          prnt = putStr . shw
+>      mapM_ (\r -> mapM_ prnt r >> putChar '\n') rows
+>      print loc
+> 
+
+* c.
+
+> -- | Trapped vacuum agent in the top left corner by obstacles
+> v2PoorScoringEnv :: V2Env
+> v2PoorScoringEnv = V2Env priori size loc
+>   where size = (10,10)
+>         loc  = (0,0)
+>         priori = V2Clean : V2Obstacle : (replicate 8 V2Dirty)
+>                  ++ [V2Obstacle] ++ (replicate 89 V2Dirty)
+> 
+
+* d.
+
 __2.12__
+
 __2.13__
 
