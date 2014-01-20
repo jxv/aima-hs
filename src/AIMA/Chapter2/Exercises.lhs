@@ -478,11 +478,6 @@ Simple Reflex Randomized Vacuum Agent
 >      put (env', st')
 >      tell [v2PerformanceMeasure env']
 >
-> scoreDirtyOpen = scoreRSVAWithEnv 1000 v2DirtyOpenEnv  
->
-> test = RSVAState [(1,1),(1,0),(0,0)] $ M.fromList [((0,0),Just $ V2RuleAction V2Right), ((0,1),Nothing), ((1,0), Just $ V2RuleAction V2Down), ((1,1), Just $ V2RuleAction V2Right), ((2,0), Nothing), ((1,2), Nothing), ((-1,0), Nothing), ((0,-1), Nothing), ((1,-1),Nothing), ((2,1), Nothing)] 
-> testenv = scoreRSVAWithEnv 15 $ V2Env [((0,0), V2Clean), ((1,0), V2Dirty),  ((0,1), V2Obstacle), ((1,1), V2Dirty)] (2,2) (0,0)
-> 
 
 __2.12__
 
