@@ -481,5 +481,13 @@ Simple Reflex Randomized Vacuum Agent
 
 __2.12__
 
+* a. _Same as 2.11.a_
+
+* b.
+
+* c.
+
+* d.
+
 __2.13__
 
