@@ -203,9 +203,6 @@ __2.10__
 
 __2.11__
 
-* a. No, such an agent, which lacks the ability to store and remember state, cannot benefit from exploration to make (perfect) rational decisions.
-* b. Yes.
-
 > data V2Action
 >   = V2Suck
 >   | V2Left
@@ -245,13 +242,6 @@ __2.11__
 > v2UpdatePrior (V2Env priori (w,_) _) sq@((x,y), flr) =
 >   let idx = w * y + x
 >   in (take idx priori) ++ [sq] ++ (drop (idx + 1) priori)
-
-> v2PerformanceMeasure :: (Num a) => V2Env -> a
-> v2PerformanceMeasure env =
->   let measure V2Dirty    = -1
->       measure V2Obstacle = 0 
->       measure V2Clean    = 1
->   in (sum . map (measure . snd) . v2Priori) env
  
 > -- | Takes in width and height into a randomly generated environment
 > v2MkEnv :: Int -> Int -> IO V2Env
@@ -266,6 +256,16 @@ __2.11__
 >      let loc = openloc !! idx
 >      return (V2Env priori (w,h) loc)
 
+* a. No, such an agent, which lacks the ability to store and remember state, cannot benefit from exploration to make (perfect) rational decisions.
+* b. Yes.
+
+> v2PerformanceMeasure :: (Num a) => V2Env -> a
+> v2PerformanceMeasure env =
+>   let measure V2Dirty    = -1
+>       measure V2Obstacle = 0 
+>       measure V2Clean    = 1
+>   in (sum . map (measure . snd) . v2Priori) env
+ 
 Simple Reflex Randomized Vacuum Agent
 
 > srrvaProgram :: V2Square -> IO V2Action
@@ -318,8 +318,6 @@ Simple Reflex Randomized Vacuum Agent
 
 > v2TestEnvs :: IO [V2Env]
 > v2TestEnvs = sequence [v2MkEnv w h | (w,h)<-replicate 10 (10,10)]
-> 
-> v2DirtyOpenEnv = V2Env [ ((x,y) ,V2Dirty) | y <- [0..9], x <- [0..9]] (10,10) (0,0)
 
 > avgSRRVAScore :: [V2Env] -> Int -> IO Float
 > avgSRRVAScore envs stepcount =
@@ -481,11 +479,53 @@ Simple Reflex Randomized Vacuum Agent
 
 __2.12__
 
+> type V2BumpSquare = (Bool, V2Floor)
+ 
 * a. _Same as 2.11.a_
 
-* b.
+* b. Yes.
+ 
+Bump Simple Reflex Randomized Vacuum Agent
+
+_(Same as 2.11.b)_
+
+> bsrrvaProgram :: V2BumpSquare -> IO V2Action
+> bsrrvaProgram per =
+>   let st = per -- | Interpret input
+>       rule = snd st -- | Rule match
+>       act = bsrrvaRuleAction rule  -- | Rule action
+>   in act -- | Return action
+>  
+> bsrrvaRuleAction :: V2Floor -> IO V2Action
+> bsrrvaRuleAction rule =
+>   case rule of
+>     V2Dirty -> return V2Suck 
+>     _ -> randEnumR (V2Left, V2Down)
+
+> scoreBSRRVA :: (Num a) => Int -> V2Env -> IO a
+> scoreBSRRVA stepcount env =
+>   do let steps = foldr1 (>>) (replicate stepcount stepBSRRVAEnv)
+>      (_,scores) <- execRWST steps () env
+>      return (sum scores)
+>  
+> stepBSRRVAEnv :: (Num a) => RWST () [a] V2Env IO ()
+> stepBSRRVAEnv =
+>   do env@(V2Env priori size loc) <- get
+>      let per = v2LookupPrior env loc
+>      act <- (io . bsrrvaProgram) per
+>      let env' = v2ApplyAction env act
+>      put env'
+>      tell [v2PerformanceMeasure env']
+
+> avgBSRRVAScore :: [V2Env] -> Int -> IO Float
+> avgBSRRVAScore envs stepcount =
+>   do let size = (fromIntegral . length) envs
+>      scores <- (sequence . map (scoreBSRRVA stepcount)) envs
+>      return ((sum scores) / size)
 
 * c.
+
+_(Same as 2.11.c)_
 
 * d.
 
