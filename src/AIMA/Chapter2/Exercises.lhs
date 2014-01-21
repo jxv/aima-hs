@@ -1,5 +1,6 @@
 > {-# LANGUAGE TypeSynonymInstances #-}
 > {-# LANGUAGE FlexibleInstances #-}
+> {-# LANGUAGE Arrows #-}
 > 
 > module AIMA.Chapter2.Exercises where
 > import qualified AIMA.Chapter2.Notes as N
@@ -349,8 +350,8 @@ Simple Reflex Randomized Vacuum Agent
 
 * d. Yes, by implementing DFS.
 
-> data V2Rule = 
->     V2RuleDone
+> data V2Rule 
+>   = V2RuleDone
 >   | V2RuleAction V2Action
 >   deriving (Show, Eq)
 >  
@@ -395,7 +396,6 @@ Simple Reflex Randomized Vacuum Agent
 >         else let p = nub' (loc:path)
 >                  p'@(g:h) = if (elem loc path) then dropWhile (/= loc) path else p
 >                  mneigh = headMay (v2ToNewNeighbors loc (M.keys visited))
->                  mlocrule = (id *** V2RuleAction) <$> mneigh
 >                  mloc = fst <$> mneigh
 >                  mrule = (V2RuleAction . snd) <$> mneigh
 >                  rule =
@@ -511,7 +511,9 @@ _(Same as 2.11.b)_
 > stepBSRRVAEnv :: (Num a) => RWST () [a] V2Env IO ()
 > stepBSRRVAEnv =
 >   do env@(V2Env priori size loc) <- get
->      let per = v2LookupPrior env loc
+>      let per = 
+>           let (_,flr) = v2LookupPrior env loc
+>           in (flr == V2Obstacle, flr)
 >      act <- (io . bsrrvaProgram) per
 >      let env' = v2ApplyAction env act
 >      put env'
@@ -529,5 +531,113 @@ _(Same as 2.11.c)_
 
 * d.
 
+> data BRSVAState = BRSVAState
+>   { brsvaPath :: [V2Loc]
+>   , brsvaVisited :: V2Visited
+>   , brsvaNextDir :: Maybe V2NextDir
+>   } deriving (Show)
+>
+> data V2NextDir
+>   = V2NextForward
+>   | V2NextBackward
+>   deriving (Show)
+> 
+> 
+> brsvaEmptyState :: BRSVAState 
+> brsvaEmptyState = BRSVAState [] M.empty Nothing
+  
+> brsvaProgram :: Num a => BRSVAState -> V2BumpSquare -> (BRSVAState, Maybe V2Action)
+> brsvaProgram st per =
+>   let st' = brsvaUpdateState st per
+>       rule = brsvaRuleMatch st'
+>       mact = rule -- | Rule action
+>   in (st', mact) -- | Return action
+  
+> brsvaStepRule :: V2Rule -> V2Rule
+> brsvaStepRule V2RuleDone = V2RuleDone
+> brsvaStepRule (V2RuleAction act) =
+>   case act of
+>     V2Suck  -> V2RuleAction V2Left
+>     V2Left  -> V2RuleAction V2Up
+>     V2Up    -> V2RuleAction V2Right
+>     V2Right -> V2RuleAction V2Down
+>     V2Down  -> V2RuleDone
+
+> brsvaUpdateState :: BRSVAState -> V2BumpSquare -> BRSVAState
+> brsvaUpdateState st@(BRSVAState path visited mnextdir) sq@(bmp,flr) =
+>   let isdone =
+>         fromMaybe False $
+>           do startloc <- lastMay path
+>              startrule <- join (M.lookup startloc visited)
+>              return (startrule == V2RuleDone)
+>       path'@(curloc:hist) = brsvaUpdatePath path visited mnextdir bmp
+>       mneighbor = headMay (v2ToNewNeighbors curloc (M.keys visited))
+>       currule
+>         | flr == V2Dirty = V2RuleAction V2Suck
+>         | otherwise = fromMaybe (v2Retreat curloc hist) (V2RuleAction . snd <$> mneighbor)
+>       mnextloc = fst <$> mneighbor
+>       mnextdir' = brsvaNextDirMay curloc hist currule 
+>       visited' = brsvaUpdateVisited visited curloc hist currule mnextloc mnextdir'
+>   in if isdone
+>         then st
+>         else BRSVAState path' visited' mnextdir'
+>
+> brsvaUpdateVisited visited loc hist rule mnextloc mnextdir = 
+>   let visited' = M.insert loc (Just rule) visited
+>   in fromMaybe visited' $
+>        do nextloc <- mnextloc
+>           nextdir <- mnextdir
+>           case nextdir of V2NextForward -> Just (M.insert nextloc Nothing visited')
+>                           V2NextBackward -> Nothing
+> 
+> brsvaUpdatePath path visited mnextdir bmp
+>   | null path = [(0,0)]
+>   | bmp = path
+>   | otherwise = 
+>       case mnextdir of
+>         Nothing -> path
+>         Just nxt -> fromMaybe [(0,0)] $
+>           case nxt of
+>             V2NextBackward -> tailMay path
+>             V2NextForward -> 
+>               do c <- headMay path
+>                  r <- join (M.lookup c visited)
+>                  return ((v2RuleToLoc c r):path) 
+> 
+> brsvaNextDirMay loc hist rule 
+>   | rule `notElem` (map V2RuleAction [V2Left,V2Up,V2Right,V2Down]) = Nothing
+>   | (v2RuleToLoc loc rule) `notElem` hist = Just V2NextForward
+>   | otherwise = Just V2NextBackward
+> 
+
+> brsvaRuleMatch :: BRSVAState -> Maybe V2Action
+> brsvaRuleMatch (BRSVAState []             _       _) = Nothing
+> brsvaRuleMatch (BRSVAState (curloc:path)  visited _) = findact =<< join (M.lookup curloc visited)
+>  where findact (V2RuleAction act) = Just act
+>        findact V2RuleDone = v2ToLoc curloc =<< headMay path
+
+> scoreBRSVA :: (Num a) => Int -> V2Env -> a
+> scoreBRSVA stepcount env = fst (scoreBRSVAWithEnv stepcount env)
+>  
+> scoreBRSVAWithEnv :: (Num a) => Int -> V2Env -> (a, V2Env)
+> scoreBRSVAWithEnv stepcount env =
+>   let steps = foldr1 (>>) (replicate stepcount stepBRSVAEnv)
+>       (st, scores) = execRWS steps () (env, brsvaEmptyState)
+>   in (sum scores, fst st)
+>  
+> stepBRSVAEnv :: (Num a) => RWS () [a] (V2Env, BRSVAState) ()
+> stepBRSVAEnv =
+>   do (env@(V2Env priori size loc), st) <- get
+>      let per = ((== V2Obstacle) &&& id) (snd (v2LookupPrior env loc))
+>          (st', mact) = brsvaProgram st per
+>          env' = fromMaybe env (v2ApplyAction env <$> mact)
+>      put (env', st')
+>      tell [v2PerformanceMeasure env']
+>
+
 __2.13__
+
+* a.
+
+* b.
 
