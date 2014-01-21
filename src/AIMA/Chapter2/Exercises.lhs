@@ -536,13 +536,13 @@ _(Same as 2.11.c)_
 >   , brsvaVisited :: V2Visited
 >   , brsvaNextDir :: Maybe V2NextDir
 >   } deriving (Show)
->
+> 
 > data V2NextDir
 >   = V2NextForward
 >   | V2NextBackward
 >   deriving (Show)
-> 
-> 
+>  
+>  
 > brsvaEmptyState :: BRSVAState 
 > brsvaEmptyState = BRSVAState [] M.empty Nothing
   
@@ -581,7 +581,7 @@ _(Same as 2.11.c)_
 >   in if isdone
 >         then st
 >         else BRSVAState path' visited' mnextdir'
->
+> 
 > brsvaUpdateVisited visited loc hist rule mnextloc mnextdir = 
 >   let visited' = M.insert loc (Just rule) visited
 >   in fromMaybe visited' $
@@ -589,7 +589,7 @@ _(Same as 2.11.c)_
 >           nextdir <- mnextdir
 >           case nextdir of V2NextForward -> Just (M.insert nextloc Nothing visited')
 >                           V2NextBackward -> Nothing
-> 
+>  
 > brsvaUpdatePath path visited mnextdir bmp
 >   | null path = [(0,0)]
 >   | bmp = path
@@ -603,12 +603,11 @@ _(Same as 2.11.c)_
 >               do c <- headMay path
 >                  r <- join (M.lookup c visited)
 >                  return ((v2RuleToLoc c r):path) 
-> 
+>  
 > brsvaNextDirMay loc hist rule 
 >   | rule `notElem` (map V2RuleAction [V2Left,V2Up,V2Right,V2Down]) = Nothing
 >   | (v2RuleToLoc loc rule) `notElem` hist = Just V2NextForward
 >   | otherwise = Just V2NextBackward
-> 
 
 > brsvaRuleMatch :: BRSVAState -> Maybe V2Action
 > brsvaRuleMatch (BRSVAState []             _       _) = Nothing
