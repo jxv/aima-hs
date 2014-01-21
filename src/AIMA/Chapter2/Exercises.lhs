@@ -299,10 +299,10 @@ Simple Reflex Randomized Vacuum Agent
 > 
 > v2ValidLoc :: V2Env -> V2Loc -> Bool
 > v2ValidLoc env@(V2Env _ size@(w,h) _) loc@(x,y) =
->      x >= 0 && x < w
->   && y >= 0 && y < h 
+>      x >= 0 && x < w -- in range horz.
+>   && y >= 0 && y < h  -- in range vert.
 >   && snd (v2LookupPrior env loc) /= V2Obstacle
-> 
+>  
 > v2ApplyAction :: V2Env -> V2Action -> V2Env
 > v2ApplyAction env@(V2Env priori size loc@(x,y)) act =
 >   let flr = snd (v2LookupPrior env loc)
@@ -479,7 +479,8 @@ Simple Reflex Randomized Vacuum Agent
 
 __2.12__
 
-> type V2BumpSquare = (Bool, V2Floor)
+> type V2Bump = Bool
+> type V2BumpSquare = (V2Bump, V2Floor)
  
 * a. _Same as 2.11.a_
 
@@ -621,16 +622,25 @@ _(Same as 2.11.c)_
 > scoreBRSVAWithEnv :: (Num a) => Int -> V2Env -> (a, V2Env)
 > scoreBRSVAWithEnv stepcount env =
 >   let steps = foldr1 (>>) (replicate stepcount stepBRSVAEnv)
->       (st, scores) = execRWS steps () (env, brsvaEmptyState)
->   in (sum scores, fst st)
+>       ((st,_,_), scores) = execRWS steps () (env, brsvaEmptyState, False)
+>   in (sum scores, st)
 >  
-> stepBRSVAEnv :: (Num a) => RWS () [a] (V2Env, BRSVAState) ()
+> stepBRSVAEnv :: (Num a) => RWS () [a] (V2Env, BRSVAState, V2Bump) ()
 > stepBRSVAEnv =
->   do (env@(V2Env priori size loc), st) <- get
->      let per = ((== V2Obstacle) &&& id) (snd (v2LookupPrior env loc))
+>   do (env@(V2Env priori size loc), st, bmp) <- get
+>      let per = (bmp, snd (v2LookupPrior env loc))
 >          (st', mact) = brsvaProgram st per
 >          env' = fromMaybe env (v2ApplyAction env <$> mact)
->      put (env', st')
+>          bmp' =
+>            fromMaybe False $
+>              do act <- mact
+>                 let r = V2RuleAction act
+>                     l = v2RuleToLoc loc r
+>                     f = snd (v2LookupPrior env' l)
+>                 if v2ValidLoc env' l
+>                    then return (f == V2Obstacle)
+>                    else return True
+>      put (env', st', bmp')
 >      tell [v2PerformanceMeasure env']
 >
 
