@@ -53,6 +53,33 @@ __2.2__
 
 __2.3__
 
+* a. False.
+     Although it's unlikely, an agent may act perfectly rational by sensing partial information.
+
+* b. False.
+     Rationality of an agent is dependent on its actions, what it's capable of sensing, and implicitly what it remembers.
+
+* c. True.
+     An already solved environment with a highly permissive definiton of rationality.
+
+* d. False.
+     The agent program is an applied representation of the agent's function, so any of the program's inputs and outputs is also constrained by this represenation.
+
+* e. False.
+     Some agent functions may have no direct representation. Such a function may assume the absent of real-world constraints such as limited memory  or limited processing power.
+
+* f. True.
+     Again, the rationality of an agent is dependent on its actions, what it's capable of sensing, and implicitly its percept history.
+
+* g. True.
+     The agent's rationality isn't directly dependent on the differences between different task environments.
+
+* h. False.
+     A rational agent would have a pre-program approach for such an environment.
+
+* i. False.
+     Any agent cannot control the cards dealt or actions of its opponents; therefore, it always can't control the outcome of a game.
+     
 
 __2.4__
 
