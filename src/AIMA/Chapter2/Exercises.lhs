@@ -39,6 +39,7 @@
 
 __2.1__ 
 
+Because the performance measure indirectly scores the agent's rationality, any arbitrary constraints, incuding _T_ time steps, set by the performance measure will define the perception of the agent's rationality.
 
 __2.2__
 
@@ -646,7 +647,8 @@ _(Same as 2.11.c)_
 
 __2.13__
 
-* a.
+* a. The agent would score lower on its performance measure. It assumes all its actions are deterministic as it rushes through the enviornment.
 
-* b.
+* b. One possible way would be to map the environment's open spaces while cleaning as need. Then, the agent forever cleans and iterates through the environment in the same order as the mapping process.
+     Another approach is to still maps the environment, but favor areas where dirt is more likely accumlated. This way the agent spends more steps cleaning than traveling to-and-from smaller, remote areas.
 
