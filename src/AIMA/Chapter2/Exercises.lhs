@@ -120,6 +120,17 @@ __2.4__
 
 __2.5__
 
+* agent - An actor inside a task environment.
+* agent function - Mathematical description of a solution to the task environment.
+* agent program - A software implmentation of the agent function.
+* rationality - The ability for an agent to act beneficially towards its goal while contrained by its possible knowledge of the environment.
+* autonomy - Something that acts from its own will.
+* reflex agent - An agent that acts purely based on present percepts.
+* model-based agent - An agent, with the help of internal state, that uses percepts to maintain a model of the environment.
+* goal-based agent - An agent which has a binary performance measure and problem generator to improve its choices on the fly.
+* utility-based agent - Similar to a goal-based agent but with probabilities. It has a function that represents a 'realistic' rational outcome which it tries to satisfy.
+* learning agent - An agent which has a performance measure and problem generator to improve its choices on the fly.
+                   While capable of reflex actions, it records critics of the percept into the learning element.
 
 __2.6__
 
