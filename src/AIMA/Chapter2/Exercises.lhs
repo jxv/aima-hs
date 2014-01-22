@@ -32,8 +32,9 @@
 > lookup' :: (Ord k) => M.Map k v -> k -> Maybe v
 > lookup' = flip M.lookup
 > 
+> notMember' : Ord k => Map k a -> k -> Bool
 > notMember' = flip M.notMember
->
+> 
 > justList :: [Maybe a] -> [a] 
 > justList = map fromJust . filter isJust
 
