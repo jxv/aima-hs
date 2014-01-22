@@ -88,6 +88,26 @@ __Sliding-block puzzles__, such as the 8-puzzle, are NP-complete and commonly us
 3.3 Searching for Solutions
 ---------------------------
 
+> -- tree search
+> -- graph search
+
+**3.3.1 Infrastructure for search algorithms**
+
+* Every node in a search algorithm's tree has: state, a parent, an action, a path-cost
+
+< childNode :: Problem -> Node -> Action -> Node
+< childNode problem parent action =
+<   let state = (problemResult problem) (nodeState parent) action
+<       pathcost = (nodePathCost parent) + (problemStepCount problem) (nodeState parent) action
+<   in Node parent action pathcost
+
+A search algorithm uses a structure to remember nodes in the frontier:
+* A __queue__ stores nodes in an order first-in-first-out (FIFO) where the search algorithm can process them by its strategy.
+* A __stack__ is similar to a queue, but it processes the nodes last-in-first-out (LIFO).
+* A __priority queue__ is a type of queue where higher priority nodes can be placed closer to the front of the queue on insertion.
+
+* Remember when implementing storage of nodes that representing them in __canonical form__ is ideal.
+
 3.4 Uniformed Search Strategies
 -------------------------------
 
