@@ -95,11 +95,13 @@ __Sliding-block puzzles__, such as the 8-puzzle, are NP-complete and commonly us
 
 * Every node in a search algorithm's tree has: state, a parent, an action, a path-cost
 
-< childNode :: Problem -> Node -> Action -> Node
-< childNode problem parent action =
-<   let state = (problemResult problem) (nodeState parent) action
-<       pathcost = (nodePathCost parent) + (problemStepCount problem) (nodeState parent) action
-<   in Node parent action pathcost
+> {-
+> childNode :: Problem -> Node -> Action -> Node
+> childNode problem parent action =
+>   let state = (problemResult problem) (nodeState parent) action
+>       pathcost = (nodePathCost parent) + (problemStepCount problem) (nodeState parent) action
+>   in Node parent action pathcost
+> -}
 
 A search algorithm uses a structure to remember nodes in the frontier:
 * A __queue__ stores nodes in an order first-in-first-out (FIFO) where the search algorithm can process them by its strategy.
