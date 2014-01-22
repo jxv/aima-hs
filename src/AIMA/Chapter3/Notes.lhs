@@ -88,7 +88,21 @@ __Sliding-block puzzles__, such as the 8-puzzle, are NP-complete and commonly us
 3.3 Searching for Solutions
 ---------------------------
 
-> -- tree search
+> {-
+> treeSearch :: Problem -> Maybe Solution
+> treeSearch problem = 
+>    let frontier = initFrontier problem
+>    in ($ frontier) $ 
+>         fix \loop f -> 
+>                if empty f
+>                   then Nothing
+>                   else let (next, f') = chooseNextNode f
+>                        in if hasGoalState next
+>                              then Just (solution next)
+>                              else loop (addNodes f' (expandNode next))
+
+> -}
+
 > -- graph search
 
 **3.3.1 Infrastructure for search algorithms**
