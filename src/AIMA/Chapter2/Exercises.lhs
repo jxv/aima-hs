@@ -83,6 +83,40 @@ __2.3__
 
 __2.4__
 
+* Playing soccer - P: The agent's team score.
+                   E: The soccer field, teamates, opponents, and the soccer ball.
+                   A: Legs for kicking and running.
+                   S: Eyes, ears, touch.
+
+* Exploring the surface of Titan - P: How complete and accurate is the map.
+                                   E: Titan.
+                                   A: Rocket boosters, radio transmitter.
+                                   S: Specialized camera, outer-space localizer, time awareness, planteray and satelite orbits, radio receptor.
+
+* Shopping for used AI books on Internet - P: List of quality books
+                                           E: The intertubes
+                                           A: Follow links, Submit book buyer
+                                           S: Web page parser, book ratings
+
+* Playing a tennis match - P: Game score.
+                           E: Tennis court, tennis ball, opponent(s and a teammate), tennis rackets, referee.
+                           A: A swingable arm and legs for running
+                           S: Eyes, touch
+
+* Performing a high jump - P: Best jump height
+                           E: High jump area, cushion, poles and bars
+                           A: Legs for jumping, arms for thrusting, back for rolling
+                           S: Eyes, sense of balance and momentum
+
+* Knitting a sweater - P: Accuracy and quality of the knitting
+                       E: Yarn, place to knit
+                       A: Movable knitting needles
+                       S: Eyes to watch the progess of the knit
+
+* Bidding on an item at an auction - P: Low cost to value ratio on successful bids
+                                     E: Other bidders, auctioneer, biddable items
+                                     A: flipping arm, bidding sign
+                                     S: Awareness to other bids, time, knowledge of current item
 
 __2.5__
 
