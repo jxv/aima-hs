@@ -135,7 +135,31 @@ __2.5__
 __2.6__
 
 
+
 __2.7__
+
+* Goal-Based pseudocode
+
+	function Goal-Based-Program (percept) returns an action
+			persistent state, rules, model, goals
+		state <- Update-State (state, action, percept, model)
+		achieved <- Goal-Function (state, goals)
+		rule <- Rule-Match (state, rules, achieved)
+		problem <- Problem-Generator (rule, goals)
+		action <- Problem-Action (problem) 
+		return action
+
+* Utility-Based pseudocode
+
+	function Utility-Based-Program (percept) returns an action
+			persistent state, rules, model, goals
+		state <- Update-State (state, action, percept, model)
+		utility <- Utility-Function (state, goals)
+		rule <- Rule-Match (state, rule, utility)
+		achieved <- Expected-Utility (rule, utility)
+		action <- Rule-Action (rule, achieved) 
+		return action
+
 
 __2.8__
 
