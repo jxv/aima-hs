@@ -99,10 +99,24 @@ __Sliding-block puzzles__, such as the 8-puzzle, are NP-complete and commonly us
 >                     in if hasGoalState next
 >                           then Just (solution next)
 >                           else loop (addNodes f' (expandNode next))
-
 > -}
 
-> -- graph search
+> {-
+> graphSearch :: Problem -> Maybe Solution
+> graphSearch problem = 
+>   ($ (initFrontier problem, emptyExploredSet)) $ 
+>      fix \loop (f, e) -> 
+>             if empty f
+>                then Nothing
+>                else let (next, f') = chooseNextNode f
+>                     in if hasGoalState next
+>                           then Just (solution next)
+>                           else let e' = addNodes e next
+>                                    isnew x = notInFrontier f' x && notInExplored e' x
+>                                    expanded = filter isnew (expandNode next)
+>                                    f'' = addNodes f' expanded
+>                                in loop (f'', e')
+> -}
 
 **3.3.1 Infrastructure for search algorithms**
 
