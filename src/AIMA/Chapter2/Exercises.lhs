@@ -43,6 +43,13 @@ Because the performance measure indirectly scores the agent's rationality, any a
 
 __2.2__
 
+* a. The agent always will clean known dirty squares, then alternate in search of another dirty square.
+
+* b. A high scoring agent will travel through the all possible squares while cleaning dirty squares, then stop moving.
+     While an agent doesn't _require_ internal state to be rational, the high scoring agent will require internal state.
+
+* c. The agent should attempt to visit all neighbor squares.
+     Yes, the agent should learn the environment's borders.
 
 __2.3__
 
