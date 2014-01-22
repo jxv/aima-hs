@@ -134,7 +134,22 @@ __2.5__
 
 __2.6__
 
+* a. Yes.
+     Many programs need to make trade-offs to operate efficiently in the real-world.
+     A program truer to the agent-function will likely be slower.
 
+* b. Yes.
+     When the agent function has unrealistic expectations what the virtual resources software can maintain.
+     Or, what it's capable of sensing.
+
+* c. No.
+     It's capable of  having different types of agent-programs.
+     However, those programs are limited by actuators and sensors.
+
+* d. The architecture has an upper-limit of _2^n_ different possible programs.
+
+* e. No.
+     But it may improve its measured performance.
 
 __2.7__
 
