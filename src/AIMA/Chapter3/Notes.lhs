@@ -177,11 +177,11 @@ This can be visualized as a pebbled dropped into a pond, where the expanding rip
 > {-
 > bfs :: Problem -> Maybe Solution
 > bfs problem = 
->   let node = Node (initState problem)
->       pathcost = 0
->       frontier = [node]
->       explored = []
->       expander n e f =
+>   let pathcost = 0 
+>       node = Node (initState problem) pathcost
+>       frontier = [node] -- FIFO queue
+>       explored = [] -- set
+>       expander n e action f =
 >         let child = nodeChild problem n action
 >                     childstate = nodeState child
 >         in if and (map (notElem childstate) [f,e])
@@ -191,26 +191,62 @@ This can be visualized as a pebbled dropped into a pond, where the expanding rip
 >               else Right f
 >   in if (goalTest problem) (nodeState node)
 >         then Just (solution node)
->         else ($ (pathcost, explored, frontier)) $ fix $
->                \loop (c,e,f) ->
+>         else ($ (explored, frontier)) $ fix $
+>                \loop (e,f) ->
 >                  if empty f
 >                     then Nothing
 >                     else let (node, f') = pop f
 >                              e' = addNode e node
 >                              actions = (problemActions problem) (nodeState node)
 >                              expansion = foldr (expander node e') (Right f') actions
->                          in either Just (loop . (,,) c e') expansion
+>                          in either Just (loop . (,) e') expansion
 > -}
 
 * Completeness: True.
 * Optimal: True. BFS returns the first validated path, which is an optimal path due to frontier's node order.
 * Time complexity: _Θ(b^(d+1))_
 * Space complexity: _Θ(b^d)_
+
 *Note: __b__ is the number of generated/branch nodes, and __d__ is the depth.*
 
 * Because BFS has expontential complexities, it can consume large amount of memory and time.
 
 **3.4.2 Uniformed-cost search**
+
+> {-
+> ucs :: Problem -> Maybe Solution
+> ucs problem = 
+>   let pathcost = 0 
+>       node = Node (initState problem) pathcost
+>       frontier = [node] -- priority queue
+>       explored = [] -- set
+>       expander n e action f =
+>         let child = nodeChild problem n action
+>                     childstate = nodeState child
+>         in if and (map (notElem childstate) [f,e])
+>               then addNode f child
+>               else fromMaybe f $
+>                      child' <- find f child -- maybe the frontier has a previously inserted eqv. child-node
+>                      return if (nodePathCost child') > (nodePathCost child)
+>                                then addNode f child
+>                                else f
+>   in if (goalTest problem) (nodeState node)
+>         then Just (solution node)
+>         else ($ (explored, frontier)) $ fix $
+>                \loop (e,f) ->
+>                  if empty f
+>                     then Nothing
+>                     else let (node, f') = pop f
+>                          in if (goalTest problem) (nodeState node)
+>                                then Just (solution node)
+>                                else let e' = addNode e node
+>                                         actions = (problemActions problem) (nodeState node)
+>                                         expansion = foldr (expander node e') f' actions
+>                                     in loop (e', expansion)
+> -}
+
+
+
 
 3.5 Informed (Heuristic) Search Strategies
 ------------------------------------------
