@@ -88,6 +88,14 @@ __Sliding-block puzzles__, such as the 8-puzzle, are NP-complete and commonly us
 3.3 Searching for Solutions
 ---------------------------
 
+* A __search tree__ is a tree respresenting searchable paths where each point is a __node__.
+* The __generation__ process of exploring possibly new nodes is called __expanding__. 
+  A validated new node is a __child node__ to the expanded node, the __parent node__.
+  The child node is added to the __frontier__ (__open list__) as it is unexplored.
+* The __search strategy__ determines how the frontier nodes are dealt.
+  A good strategy avoids __repeated state__, __loop paths__, and __redundant paths__.
+* An algorithm that checks against its __explored set__ (__closed list__) will avoid researching nodes. 
+
 > {-
 > treeSearch :: Problem -> Maybe Solution
 > treeSearch problem = 
