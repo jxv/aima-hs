@@ -171,6 +171,9 @@ Defintions arising from these complexities include:
 
 **3.4.1 Breadth-first search**
 
+**Breath-first search** expands the frontier giving preference towards the _nearest/shallowest_ node from the inital node. 
+This can be visualized as a pebbled dropped into a pond, where the expanding ripple is the frontier.
+
 > {-
 > bfs :: Problem -> Maybe Solution
 > bfs problem = 
@@ -198,6 +201,16 @@ Defintions arising from these complexities include:
 >                              expansion = foldr (expander node e') (Right f') actions
 >                          in either Just (loop . (,,) c e') expansion
 > -}
+
+* Completeness: True.
+* Optimal: True. BFS returns the first validated path, which is an optimal path due to frontier's node order.
+* Time complexity: _Θ(b^(d+1))_
+* Space complexity: _Θ(b^d)_
+* _Node: __b__ is the number of generated/branch nodes, and __d__ is the depth._
+
+* Because BFS has expontential complexities, it can consume large amount of memory and time.
+
+**3.4.2 Uniformed-cost search**
 
 3.5 Informed (Heuristic) Search Strategies
 ------------------------------------------
