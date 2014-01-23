@@ -169,6 +169,35 @@ Defintions arising from these complexities include:
 * An __uninformed search__ (__blind search__) chooses to expand each node in the frontier as if it has the equal potential to be as close to a goal-state/node.
 * An __informed search__ (__hueristic search__) has additonal functions and/or structures to rank and choose better frontier nodes.
 
+**3.4.1 Breadth-first search**
+
+> {-
+> bfs :: Problem -> Maybe Solution
+> bfs problem = 
+>   let node = Node (initState problem)
+>       pathcost = 0
+>       frontier = [node]
+>       explored = []
+>       expander n e f =
+>         let child = nodeChild problem n action
+>                     childstate = nodeState child
+>         in if and (map (notElem childstate) [f,e])
+>               then if (goalTest problem) childstate
+>                       then Left (solution child)
+>                       else Right (addNode f child)
+>               else Right f
+>   in if (goalTest problem) (nodeState node)
+>         then Just (solution node)
+>         else ($ (pathcost, explored, frontier)) $ fix $
+>                \loop (c,e,f) ->
+>                  if empty f
+>                     then Nothing
+>                     else let (node, f') = pop f
+>                              e' = addNode e node
+>                              actions = (problemActions problem) (nodeState node)
+>                              expansion = foldr (expander node e') (Right f') actions
+>                          in either Just (loop . (,,) c e') expansion
+> -}
 
 3.5 Informed (Heuristic) Search Strategies
 ------------------------------------------
