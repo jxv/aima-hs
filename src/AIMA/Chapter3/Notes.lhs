@@ -181,7 +181,7 @@ This can be visualized as a pebbled dropped into a pond, where the expanding rip
 >       node = Node (initState problem) pathcost
 >       frontier = [node] -- FIFO queue
 >       explored = [] -- set
->       expander n e action f =
+>       expanderAndSelector n e action f =
 >         let child = nodeChild problem n action
 >                     childstate = nodeState child
 >         in if and (map (notElem childstate) [f,e])
@@ -198,12 +198,14 @@ This can be visualized as a pebbled dropped into a pond, where the expanding rip
 >                     else let (node, f') = pop f
 >                              e' = addNode e node
 >                              actions = (problemActions problem) (nodeState node)
->                              expansion = foldr (expander node e') (Right f') actions
+>                              expansion = foldr (expanderAndSelector node e') (Right f') actions
 >                          in either Just (loop . (,) e') expansion
 > -}
 
 * Completeness: True.
-* Optimal: True. BFS returns the first validated path, which is an optimal path due to frontier's node order.
+* Optimal: False.
+           BFS returns the first validated path from expansion, which may not be optimal path because the expanded node may have a lower path-cost from another node.
+           If every node's path-cost and step is equal, then the resulted path is always optimal.
 * Time complexity: _Θ(b^(d+1))_
 * Space complexity: _Θ(b^d)_
 
@@ -246,6 +248,12 @@ This can be visualized as a pebbled dropped into a pond, where the expanding rip
 > -}
 
 
+* Completeness: True, when search doesn't infinitely expand over the lowest-cost node using a zero-or-negative stepping-cost.
+* Optimal: True.
+           UFS returns the lowest-cost validated path, which is always an optimal path due to frontier's maintained low-cost node-ordering.
+* Time complexity: _Θ(b^(d+1))_ <= _Θ(b^(1+(C*/ε)))_, where C* is the cost of the optimal path and ε is lowest action-cost.
+                   The BFS like complexity using _d_ is true when every step is equal.
+* Space complexity: _Θ(b^d)_ <= _Θ(b^(C*/ε))_
 
 
 3.5 Informed (Heuristic) Search Strategies
