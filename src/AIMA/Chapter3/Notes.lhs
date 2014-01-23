@@ -250,11 +250,37 @@ This can be visualized as a pebbled dropped into a pond, where the expanding rip
 
 * Completeness: True, when search doesn't infinitely expand over the lowest-cost node using a zero-or-negative stepping-cost.
 * Optimal: True.
-           UFS returns the lowest-cost validated path, which is always an optimal path due to frontier's maintained low-cost node-ordering.
-* Time complexity: _Θ(b^(d+1))_ <= _Θ(b^(1+(C*/ε)))_, where C* is the cost of the optimal path and ε is lowest action-cost.
+           UFS returns the lowest-cost validated path,
+             which is always an optimal path due to frontier's maintained low-cost node-ordering.
+* Time complexity range: [_Θ(b^(d+1))_, _Θ(b^(1+(C*/ε)))_],
+                           where C* is the cost of the optimal path and ε is lowest action-cost.
                    The BFS like complexity using _d_ is true when every step is equal.
-* Space complexity: _Θ(b^d)_ <= _Θ(b^(C*/ε))_
+* Space complexity range: [_Θ(b^d)_, _Θ(b^(C*/ε))]_
 
+
+**3.4.3 Depth-first search**
+
+* __Depth-first search__ expands the deepest node in the frontier stack (LIFO).
+  If the expansion yields nothing,
+    then it backtracks the previous frontier.
+  It stops when it finds its goal,
+    or explored all nodes and fail to find one with a goal state.
+
+* Completeness: True.
+* Optimal: False.
+           It chooses the first-explored, validated-goal-stated node regardless of its optimality.
+* Time/Space complexity: Worst case is _Θ(b^m)_,
+                           where the algorithm explores/generates all nodes of the tree with maxmium depth of _m_.
+
+**3.4.4 Depth-limited search**
+
+
+
+**3.4.5 Iterative deepening depth-first search**
+
+**3.4.6 Bidirectional search**
+
+**3.4.7 Comparing uniformed search strategies**
 
 3.5 Informed (Heuristic) Search Strategies
 ------------------------------------------
