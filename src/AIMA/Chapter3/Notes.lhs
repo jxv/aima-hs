@@ -206,7 +206,7 @@ This can be visualized as a pebbled dropped into a pond, where the expanding rip
 * Optimal: True. BFS returns the first validated path, which is an optimal path due to frontier's node order.
 * Time complexity: _Θ(b^(d+1))_
 * Space complexity: _Θ(b^d)_
-* _Node: __b__ is the number of generated/branch nodes, and __d__ is the depth._
+*Note: __b__ is the number of generated/branch nodes, and __d__ is the depth.*
 
 * Because BFS has expontential complexities, it can consume large amount of memory and time.
 
