@@ -267,13 +267,23 @@ This can be visualized as a pebbled dropped into a pond, where the expanding rip
     or explored all nodes and fail to find one with a goal state.
 
 * Completeness: True.
-* Optimal: False.
-           It chooses the first-explored, validated-goal-stated node regardless of its optimality.
+* Optimality: False.
+              It chooses the first-explored, validated-goal-stated node regardless of its optimality.
 * Time/Space complexity: Worst case is _Θ(b^m)_,
                            where the algorithm explores/generates all nodes of the tree with maxmium depth of _m_.
 
 **3.4.4 Depth-limited search**
 
+* Because DFS may explore towards the next-deepen node indefinitely, it can be impracticial for implemenation on a computer with especially small memory.
+  __Depth-limited search__ limits the DFS to a maxmium exploration depth.
+  A maxmium-depth node in DLS is treated/equivalent to a node with no expansion nodes in DFS.
+
+* Completeness: False.
+                The first possible goal-stated node may be out of reach of the depth-limit.
+* Optimality: False.
+              It chooses the first-explored, validated-goal-stated node regardless of its optimality.
+* Time/Space complexity: Worst case is _Θ(b^l)_,
+                           where the algorithm explores/generates all nodes of the tree with a discrete, maxmium depth of _l_.
 
 
 **3.4.5 Iterative deepening depth-first search**
