@@ -145,8 +145,30 @@ A search algorithm uses a structure to remember nodes in the frontier:
 
 * Remember when implementing storage of nodes that representing them in __canonical form__ is ideal.
 
+**3.3.2 Measuring problem-solving performance**
+
+Completeness and optimality depend on the defintion of the math function.
+
+* __Completeness__: If there exists a solution, will the algorithm find it?
+* __Optimality__: Does the stragtey find the best, possible solution?
+
+Time and space complexity depend on the defintion of the math function, software program, and the machine architecture.
+
+* __Time complexity__: How long does the algorithm take to find a solution?
+* __Space complexity__: How much memory space does it consume?
+
+Defintions arising from these complexities include:
+
+* The __branching factor__ expresses the quantity of sibling nodes.
+* The __depth factor__ expresses the quantity of child nodes.
+* The __search cost__, a synonym for time (and space) complexity, added with the path cost equals the __total cost__.
+
 3.4 Uniformed Search Strategies
 -------------------------------
+
+* An __uninformed search__ (__blind search__) chooses to expand each node in the frontier as if it has the equal potential to be as close to a goal-state/node.
+* An __informed search__ (__hueristic search__) has additonal functions and/or structures to rank and choose better frontier nodes.
+
 
 3.5 Informed (Heuristic) Search Strategies
 ------------------------------------------
