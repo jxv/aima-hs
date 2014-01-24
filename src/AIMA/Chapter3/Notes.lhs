@@ -291,29 +291,50 @@ This can be visualized as a pebbled dropped into a pond, where the expanding rip
 >  
 > recursiveDLS :: Node -> Problem -> Limit -> Maybe Solution
 > recursiveDLS node problem limit = 
->   let deepen _ _      (Just res) = Just res
->       deepen n action Nothing =
->         do let child = childNode problem n action
->            recursiveDLS child problem (limit - 1)
->   in if (goalTest problem) (nodeState node)
->         then Just (solution node)
->         else if limit == 0
+>   if (goalTest problem) (nodeState node)
+>      then Just (solution node)
+>      else if limit == 0
 >              then Nothing
 >              else let actions = (problemActions problem) (nodeState node)
 >                   in foldr (deepen node) Nothing actions
->  
+>   where
+>     deepen _ _      (Just res) = Just res
+>     deepen n action Nothing =
+>       do let child = childNode problem n action
+>          recursiveDLS child problem (limit - 1)
 > -}
 
-* The max number of steps/depth known in advance defines the __diameter__ of the state space.
+* Using the max number of steps/depth, when it is known in advance, defines the __diameter__ of the state space.
 
 **3.4.5 Iterative deepening depth-first search**
 
 > {-
 > iterativeDeepeningSearch :: Problem -> Maybe solution
-> iterativeDeepeningSearch problem = (head . dropWhile isNothing) (map (depthLimitedSearch problem) [1..])
+> iterativeDeepeningSearch problem = (head . dropWhile isNothing) (map (depthLimitedSearch problem) [0..])
 > -}
 
+* __Iterative deepning search__ recursively calls DLS while increasing the search depth limit until the goal state is found.
+  The benefit is that if a goal-state is within a certain number of steps,
+    then it may be before DFS.
+  Because some state-spaces may be infinitely or extremely large, the search effort may never backtrack.
+  This is a problem when a goal-state is on sibling node that is never explored.
+  ILS fixes this by acting as a pseudo BFS in which the nodes on the depth limit represents the frontier.
+  ILS is useful when BFS is needed by a agent(s) which can't multilocate.
+
+
+* Completeness: True.
+* Optimality: False.
+              It chooses the first-explored, validated-goal-stated node regardless of its optimality.
+              It's only optimal when all stepping costs are equal.
+* Time complexity: Θ(b^d)
+* Space complexity: Θ(b*d)
+
+
+* __Iterative lengthening search__ is similar to IDS, but it uses a path-cost as the 'limit' instead of depth/steps.
+  IDS is to ILS as BFS is to UCS.
+
 **3.4.6 Bidirectional search**
+
 
 **3.4.7 Comparing uniformed search strategies**
 
