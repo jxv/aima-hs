@@ -285,6 +285,26 @@ This can be visualized as a pebbled dropped into a pond, where the expanding rip
 * Time/Space complexity: Worst case is _Θ(b^l)_,
                            where the algorithm explores/generates all nodes of the tree with a discrete, maxmium depth of _l_.
 
+> {-
+> depthLimitedSearch :: Problem -> Integer -> Maybe Solution
+> depthLimitedSearch problem limit = recursiveDLS (mkNode (initState problem)) problem limit
+>  
+> recursiveDLS :: Node -> Problem -> Limit -> Maybe Solution
+> recursiveDLS node problem limit = 
+>   let deepen _ _      (Just res) = Just res
+>       deepen n action Nothing =
+>         do let child = childNode problem n action
+>            recursiveDLS child problem (limit - 1)
+>   in if (goalTest problem) (nodeState node)
+>         then Just (solution node)
+>         else if limit == 0
+>              then Nothing
+>              else let actions = (problemActions problem) (nodeState node)
+>                   in foldr (deepen node) Nothing actions
+>  
+> -}
+
+* The max number of steps/depth known in advance defines the __diameter__ of the state space.
 
 **3.4.5 Iterative deepening depth-first search**
 
