@@ -348,6 +348,7 @@ This can be visualized as a pebbled dropped into a pond, where the expanding rip
 
 **3.4.7 Comparing uniformed search strategies**
 
+_Look at the completeness, time and space complexities, optimality above._
 
 3.5 Informed (Heuristic) Search Strategies
 ------------------------------------------
