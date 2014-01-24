@@ -329,14 +329,25 @@ This can be visualized as a pebbled dropped into a pond, where the expanding rip
 * Time complexity: Θ(b^d)
 * Space complexity: Θ(b*d)
 
-
 * __Iterative lengthening search__ is similar to IDS, but it uses a path-cost as the 'limit' instead of depth/steps.
   IDS is to ILS as BFS is to UCS.
 
 **3.4.6 Bidirectional search**
 
+* A __bidirectional search__ has two searches from the start to the goal-search-paths and from the goal to the start-search-paths. 
+  Obviously, the start and goal node must be known in advance,
+    but with the benefit of reducing the necessary depth from the start node.
+
+* Completeness: True.
+* Optimality: False.
+              It chooses the first, linked paths regardless of its optimality.
+              The path is only optimal when all stepping costs are equal and when both directional searches are BFS.
+* Time complexity: Θ(b^(d/2))
+* Space complexity: Θ(b^(d/2))
+
 
 **3.4.7 Comparing uniformed search strategies**
+
 
 3.5 Informed (Heuristic) Search Strategies
 ------------------------------------------
