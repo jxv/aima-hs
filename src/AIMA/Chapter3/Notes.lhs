@@ -308,6 +308,11 @@ This can be visualized as a pebbled dropped into a pond, where the expanding rip
 
 **3.4.5 Iterative deepening depth-first search**
 
+> {-
+> iterativeDeepeningSearch :: Problem -> Maybe solution
+> iterativeDeepeningSearch problem = (head . dropWhile isNothing) (map (depthLimitedSearch problem) [1..])
+> -}
+
 **3.4.6 Bidirectional search**
 
 **3.4.7 Comparing uniformed search strategies**
