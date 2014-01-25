@@ -353,6 +353,19 @@ _Look at the completeness, time and space complexities, optimality above._
 3.5 Informed (Heuristic) Search Strategies
 ------------------------------------------
 
+* __Informed search__ is class of search strategies which uses an externally-defined, informative guidance while searching.
+  With the right guidance, informed searches likely outcompete their uninformed search counter-parts.
+
+* __Best-first search__, a general type of informed search, that uses __evaluation function__ _f(n)_ for cost-estimation and typically a __huersitic function__ _h(n)_.
+
+**3.5.1 Greedy best-first search**
+
+**3.5.2 A-Star search: Minimizing the total estimate solution cost**
+
+**3.5.3 Memory-bounded heuristic search**
+
+**3.5.4 Learning to search better**
+
 3.6 Heuristic Functions
 -----------------------
 
