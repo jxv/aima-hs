@@ -360,6 +360,9 @@ _Look at the completeness, time and space complexities, optimality above._
 
 **3.5.1 Greedy best-first search**
 
+* A __greedy best-first search__ uses a hueristic function to find and expand the closest/nearest node.
+  Use a __straight-line distance__ hueristic for search problems related to traveling distances.
+
 **3.5.2 A-Star search: Minimizing the total estimate solution cost**
 
 **3.5.3 Memory-bounded heuristic search**
