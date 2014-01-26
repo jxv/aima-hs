@@ -286,8 +286,8 @@ This can be visualized as a pebbled dropped into a pond, where the expanding rip
                            where the algorithm explores/generates all nodes of the tree with a discrete, maxmium depth of _l_.
 
 > {-
-> depthLimitedSearch :: Problem -> Integer -> Maybe Solution
-> depthLimitedSearch problem limit = recursiveDLS (mkNode (initState problem)) problem limit
+> dls :: Problem -> Integer -> Maybe Solution
+> dls problem limit = recursiveDLS (mkNode (initState problem)) problem limit
 >  
 > recursiveDLS :: Node -> Problem -> Limit -> Maybe Solution
 > recursiveDLS node problem limit = 
@@ -309,8 +309,8 @@ This can be visualized as a pebbled dropped into a pond, where the expanding rip
 **3.4.5 Iterative deepening depth-first search**
 
 > {-
-> iterativeDeepeningSearch :: Problem -> Maybe solution
-> iterativeDeepeningSearch problem = (head . dropWhile isNothing) (map (depthLimitedSearch problem) [0..])
+> ids :: Problem -> Maybe solution
+> ids problem = (head . dropWhile isNothing) (map (dls problem) [0..])
 > -}
 
 * __Iterative deepning search__ recursively calls DLS while increasing the search depth limit until the goal state is found.
@@ -364,6 +364,21 @@ _Look at the completeness, time and space complexities, optimality above._
   Use a __straight-line distance__ hueristic for search problems related to traveling distances.
 
 **3.5.2 A-Star search: Minimizing the total estimate solution cost**
+
+* __A-Star search__, which uses _f(n) = g(n) + h(n)_,
+    _f(n)_ is the evaluation func which equals the sum of _g(n)_, the step-cost func to each node n, and _h(n)_, the heuristic func for each node.
+
+__Conditions for optimality: Admissibility and consistency__
+
+* An __admissible heuristic__ never overestimates the cost to reach a goal node.
+* To measure __consistency__ (__monotoncity__) of a heuristic function with the __triangle inequality__,
+    _h(n) <= c(n,a,n') + h(n')_. _c(n,a,n')_ is the consistency function.
+
+__Optimality of A*__
+
+* __Contours__ - topographical lines which split by the _f(n)_ values between the nodes.
+* __Pruned__ - eliminating the node from expansion with examination.
+* __Optimally efficent__ - an algorithm which chooses the best path with efficiency. 
 
 **3.5.3 Memory-bounded heuristic search**
 
