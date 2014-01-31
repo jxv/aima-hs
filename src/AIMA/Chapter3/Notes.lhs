@@ -389,6 +389,10 @@ __Optimality of A*__
 3.6 Heuristic Functions
 -----------------------
 
+Two common heuristics for the 8-puzzle:
+* h1: the number of misplaced tiles
+* h2: the sum of the distance, such as the __Manhattan distance__, from the tile's correct location.
+
 **3.6.1 The effect of huristic of accuracy on performance**
 
 **3.6.2 Generating admissible heuristics from relaxed problems**
