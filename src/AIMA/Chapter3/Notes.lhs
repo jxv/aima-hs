@@ -11,7 +11,7 @@ and solving with uninformed and informed search algorithms each producing a sequ
 3.1 Problem Solving
 -------------------
 
-* Having a goal organize an agent's behavior towards __goal formulation__. A clear goal produces a set of states which the agent pursues.
+* Having a goal organizes an agent's behavior towards __goal formulation__. A clear goal produces a set of states which the agent pursues.
 * Choosing which action and state to follow while pursuing the goal is the process of __problem formulation__.
   How the agent decides depends on the environment; whether it's unknown, observerable, known, or determinstic.
 * After the process of __searching__ for the goal, the agent __executes__ the __solution__ in the environment.
@@ -380,12 +380,22 @@ __Optimality of A*__
 * __Pruned__ - eliminating the node from expansion with examination.
 * __Optimally efficent__ - an algorithm which chooses the best path with efficiency. 
 
+* The difference between the actual-cost and the heuristic-cost is the __absolute error__ (__relative error__).
+
 **3.5.3 Memory-bounded heuristic search**
 
 **3.5.4 Learning to search better**
 
 3.6 Heuristic Functions
 -----------------------
+
+**3.6.1 The effect of huristic of accuracy on performance**
+
+**3.6.2 Generating admissible heuristics from relaxed problems**
+
+**3.6.3 Generating admissible heuristics from subproblems: Pattern databases**
+
+**3.6.4 Learning heuristics from experience**
 
 3.7 Summary
 -----------
